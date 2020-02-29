@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1077636721774",
+    "firebase_url": "https://eventifind.firebaseio.com",
+    "project_id": "eventifind",
+    "storage_bucket": "eventifind.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1077636721774:android:7b9593dec987d5090f8a7f",
+        "android_client_info": {
+          "package_name": "com.example.eventifind"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1077636721774-jhesr6meq199k3172jofvlnd6f1pjti5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWLoOfNi4yOo-kGN440asYmPHrhjB5vXw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1077636721774-jhesr6meq199k3172jofvlnd6f1pjti5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
