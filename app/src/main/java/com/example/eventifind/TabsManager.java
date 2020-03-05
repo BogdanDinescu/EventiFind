@@ -3,7 +3,6 @@ package com.example.eventifind;
 import android.app.Activity;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
@@ -18,13 +17,13 @@ import java.util.List;
 class TabsManager {
     private FragmentManager fragmentManager;
     private Activity activity;
-    private Toolbar toolbar;
     private ViewPager viewPager;
     private TabLayout tabLayout;
 
     private FeedFragment feedFragment;
     private MapFragment mapFragment;
     private CalendarFragment calendarFragment;
+    private AccountFragment accountFragment;
 
     TabsManager(Activity activity, FragmentManager fm) {
         this.activity = activity;
@@ -35,11 +34,13 @@ class TabsManager {
 
         viewPager = this.activity.findViewById(R.id.view_pager);
         tabLayout = this.activity.findViewById(R.id.tab_layout);
+        tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
 
         // creeaza obiectele fragment
         feedFragment = new FeedFragment();
         mapFragment = new MapFragment();
         calendarFragment = new CalendarFragment();
+        accountFragment = new AccountFragment();
 
         tabLayout.setupWithViewPager(viewPager);
 
@@ -48,12 +49,14 @@ class TabsManager {
         viewPagerAdapter.addFragment(feedFragment, this.activity.getResources().getString(R.string.Feed));
         viewPagerAdapter.addFragment(mapFragment, this.activity.getResources().getString(R.string.Map));
         viewPagerAdapter.addFragment(calendarFragment, this.activity.getResources().getString(R.string.Calendar));
+        viewPagerAdapter.addFragment(accountFragment,this.activity.getResources().getString(R.string.Account));
         // le randez
         viewPager.setAdapter(viewPagerAdapter);
         // pun iconitele
         tabLayout.getTabAt(0).setIcon(R.drawable.ic_feed);
         tabLayout.getTabAt(1).setIcon(R.drawable.ic_pin);
         tabLayout.getTabAt(2).setIcon(R.drawable.ic_calendar);
+        tabLayout.getTabAt(3).setIcon(R.drawable.ic_account);
     }
 
     // clasa care tine evidenta fragmentelor

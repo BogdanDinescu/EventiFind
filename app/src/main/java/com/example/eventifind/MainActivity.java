@@ -3,9 +3,8 @@ package com.example.eventifind;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.content.Intent;
 import android.os.Bundle;
-
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
 public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
@@ -24,6 +23,14 @@ public class MainActivity extends AppCompatActivity {
 
         TabsManager tabsManager = new TabsManager(this, getSupportFragmentManager());
         tabsManager.CreateTabs();
+    }
 
+    // go home on back pressed
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 }
