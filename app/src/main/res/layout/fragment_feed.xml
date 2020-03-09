@@ -8,7 +8,12 @@
     <!-- Sterge textul placeholder mai tarziu -->
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Aici va fi feed-ul" />
+        android:layout_height="match_parent" />
+
+    <Button
+        android:id="@+id/create_event"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Create_event" />
 
 </FrameLayout>
