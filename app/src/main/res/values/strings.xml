@@ -11,7 +11,8 @@
     <string name="Name_event">Event name</string>
     <string name="Description">Event description</string>
     <string name="Date_select">Tap to select Date</string>
-    <string name="Location_select">Tap to select loaction</string>
+    <string name="Location_select">Tap to select location</string>
     <string name="Fields_empty">Fields must not be empty</string>
     <string name="Event_created">Event created</string>
+    <string name="Unnamed_location">Unnamed location</string>
 </resources>

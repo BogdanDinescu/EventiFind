@@ -1,13 +1,8 @@
 package com.example.eventifind;
 
-import android.util.Log;
-
-import androidx.annotation.NonNull;
-
-import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.firestore.GeoPoint;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -21,33 +16,28 @@ public class Database {
         return mDatabase;
     }
 
-    public static void createEvent(String name, String description, Date data , GeoPoint geoPoint){
+    public static void createEvent(String name, String description, Date data , LatLng geoPoint){
         String key = getDatabaseReference().child("events").push().getKey();
         Event event = new Event(name,description,data,geoPoint);
-        getDatabaseReference().child(key).setValue(event);
+        getDatabaseReference().child("events").child(key).setValue(event);
     }
 
-    // !!! DELETE LATER !!!
-    // constructor temporar fara locatie pana cand implementez locationPicker
-    public static void createEvent(String name, String description, Date data){
-        String key = getDatabaseReference().child("events").push().getKey();
-        Event event = new Event(name,description,data);
-        getDatabaseReference().child("events").child(key).setValue(event).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.e("Database Error",e.toString());
-            }
-        });
-    }
 }
 
 class Event implements Serializable {
     private String name;
     private String description;
     private Date date;
-    private GeoPoint geoPoint;
+    private LatLng point;
 
     public Event() {
+    }
+    // treubie lasat public
+    public Event(String name, String description, Date data, LatLng point) {
+        this.name = name;
+        this.description = description;
+        this.date = data;
+        this.point = point;
     }
 
     public String getName() {
@@ -74,26 +64,11 @@ class Event implements Serializable {
         this.date = date;
     }
 
-    public GeoPoint getGeoPoint() {
-        return geoPoint;
+    public LatLng getPoint() {
+        return point;
     }
 
-    public void setGeoPoint(GeoPoint geoPoint) {
-        this.geoPoint = geoPoint;
-    }
-
-    public Event(String name, String description, Date data, GeoPoint geoPoint) {
-        this.name = name;
-        this.description = description;
-        this.date = data;
-        this.geoPoint = geoPoint;
-    }
-
-    // !!! DELETE LATER !!!
-    // constructor temporar fara locatie pana cand implementez locationPicker
-    public Event(String name, String description, Date data) {
-        this.name = name;
-        this.description = description;
-        this.date = data;
+    public void setPoint(LatLng point) {
+        this.point = point;
     }
 }

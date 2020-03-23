@@ -2,6 +2,8 @@ package com.example.eventifind;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,34 +18,54 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 public class EventDialog extends DialogFragment {
     private EditText textName;
     private EditText textDescription;
     protected static TextView textDate;
-    protected static TextView textLocatie;
+    private TextView textLocation;
+    private LatLng point;
+    private String address;
     private Button cancel;
     private Button ok;
+
+    EventDialog(LatLng point, String address) {
+        this.point = point;
+        this.address = address;
+    }
+
+    EventDialog(){
+
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.create_event,container,false);
-        return v;
+        View view = inflater.inflate(R.layout.create_event,container,false);
+        getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         textName =  view.findViewById(R.id.event_name);
         textDescription = view.findViewById(R.id.description);
         textDate = view.findViewById(R.id.date);
+        textLocation = view.findViewById(R.id.location);
         cancel = view.findViewById(R.id.cancel);
         ok = view.findViewById(R.id.ok);
+
+        textLocation.setText(address);
+
         // Cancel
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -59,39 +81,37 @@ public class EventDialog extends DialogFragment {
                 String description = textDescription.getText().toString();
                 Date date = null;
                 try {
-                    date = new SimpleDateFormat("dd/MM/yyyy").parse(textDate.getText().toString());
+                    date = new SimpleDateFormat("dd/MM/yyyy",Locale.US).parse(textDate.getText().toString());
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
                 // daca nu s-au introdus date atunci afiseaza un mesaj de eroare
-                if(name.isEmpty() || description.isEmpty()){
+                if(name.isEmpty() || description.isEmpty() || date == null){
                     showToast(getActivity().getResources().getString(R.string.Fields_empty));
                     // altfel pune evenimentul in baza de date si afieaza un mesaj
                 }else {
-                    Database.createEvent(name,description,date);
+                    Database.createEvent(name,description,date,point);
                     showToast(getActivity().getResources().getString(R.string.Event_created));
                     EventDialog.this.getDialog().cancel();
                 }
             }
         });
+        // se deschide dialogul pentru selectarea datei
         textDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showDatePickerDialog(v);
             }
         });
+        // se deschide dialogul pentru selectarea locatiei
     }
 
-    public void showDatePickerDialog(View v) {
+    private void showDatePickerDialog(View v) {
         DialogFragment newFragment = new DatePickerFragment();
         newFragment.show(getFragmentManager(), "datePicker");
     }
-    // functia care afiseaza un mesaj
-    private void showToast(String message){
-        Toast toast = Toast.makeText(getContext(), message, Toast.LENGTH_SHORT);
-        toast.show();
-    }
 
+    // clasa care se ocupa de selctarea datei
     public static class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
 
         @Override
@@ -105,8 +125,14 @@ public class EventDialog extends DialogFragment {
         }
 
         public void onDateSet(DatePicker view, int year, int month, int day) {
-            textDate.setText(day + "/" + month + "/" + year);
+            // aparent luna se indexeaza de la 0
+            textDate.setText(day + "/" + (month+1) + "/" + year);
         }
     }
 
+    // functia care afiseaza un mesaj
+    private void showToast(String message){
+        Toast toast = Toast.makeText(getContext(), message, Toast.LENGTH_SHORT);
+        toast.show();
+    }
 }
