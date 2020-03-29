@@ -6,6 +6,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,20 +21,24 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import static android.content.Context.LOCATION_SERVICE;
 
-
 public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener {
 
-    private GoogleMap gMap;
+    private static GoogleMap gMap;
     private MapView mapView;
+    private static List<Marker> markers;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -57,6 +62,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         // obtine locatia curenta
         Location location = getCurrentLocation();
+
         // se centreaza camera pe locatia curenta
         if (location != null) {
             gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 13));
@@ -66,14 +72,26 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                     .build();
             gMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         }
-        //LatLng sydney = new LatLng(-34, 151);
-        //gMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        //gMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        // obtine lista cu event-urile din imprejur
+        Database.queryClosestEvents(location,10);
+    }
+
+    public static void addMarkers(){
+        markers = new ArrayList<Marker>();
+        for(Event e:Database.eventsList){
+            LatLng point = new LatLng(e.getLatitude(), e.getLongitude());
+            MarkerOptions markerOptions = new MarkerOptions().
+                    position(point)
+                    .title(e.getName())
+                    .snippet(e.getDescription())
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+            markers.add(gMap.addMarker(markerOptions));
+        }
     }
 
     @Override
     public void onMapLongClick(LatLng point) {
-        showDialog(point,getAddressLocation(point));
+        showDialog(point.latitude,point.longitude,getAddressLocation(point));
     }
 
     // aceasta functie primeste Latitudine si Longitudine si returneaza stringul cu adresa
@@ -104,8 +122,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         return location;
     }
 
-    public void showDialog(LatLng point,String address){
-        DialogFragment newFragment = new EventDialog(point,address);
+    public void showDialog(double latitude, double longitude,String address){
+        DialogFragment newFragment = new EventDialog(latitude,longitude,address);
         newFragment.show(getFragmentManager(), "eventDialog");
     }
+
 }

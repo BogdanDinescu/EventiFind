@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.location.Location;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,8 +19,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
-import com.google.android.gms.maps.model.LatLng;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -31,13 +30,15 @@ public class EventDialog extends DialogFragment {
     private EditText textDescription;
     protected static TextView textDate;
     private TextView textLocation;
-    private LatLng point;
+    private double latitude;
+    private double longitude;
     private String address;
     private Button cancel;
     private Button ok;
 
-    EventDialog(LatLng point, String address) {
-        this.point = point;
+    EventDialog(double latitude, double longitude, String address) {
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.address = address;
     }
 
@@ -90,8 +91,12 @@ public class EventDialog extends DialogFragment {
                     showToast(getActivity().getResources().getString(R.string.Fields_empty));
                     // altfel pune evenimentul in baza de date si afieaza un mesaj
                 }else {
-                    Database.createEvent(name,description,date,point);
-                    showToast(getActivity().getResources().getString(R.string.Event_created));
+                    try {
+                        Database.createEvent(name,description,date,latitude,longitude);
+                        showToast(getActivity().getResources().getString(R.string.Event_created));
+                    }catch (RuntimeException e){
+                        showToast(e.getMessage());
+                    }
                     EventDialog.this.getDialog().cancel();
                 }
             }
