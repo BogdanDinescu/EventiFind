@@ -18,16 +18,18 @@ import com.google.firebase.database.ValueEventListener;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Database {
     private static DatabaseReference mDatabase = null;
-    public static List<Event> eventsList;
+    public static HashMap<String,Event> eventMap;
     private Database(){};
     private static DatabaseReference getDatabaseReference(){
         if(mDatabase == null) {
             mDatabase = FirebaseDatabase.getInstance().getReference();
-            eventsList = new ArrayList<Event>();
+            eventMap = new HashMap<String, Event>();
         }
         return mDatabase;
     }
@@ -62,10 +64,10 @@ public class Database {
                     // daca inregistrarea e in zonele date de hash-uri
                     String h = eventSnapshot.child("geoHash").getValue(String.class);
                     if (stringsHashes.contains(h)){
-                        eventsList.add(eventSnapshot.getValue(Event.class));
-                        MapFragment.addMarkers();
+                        eventMap.put(eventSnapshot.getKey(),eventSnapshot.getValue(Event.class));
                     }
                 }
+                MapFragment.addMarkers();
             }
             // daca citirea a esuat
             @Override
