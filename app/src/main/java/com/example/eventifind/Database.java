@@ -7,7 +7,6 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.fonfon.geohash.GeoHash;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -20,21 +19,22 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Database {
     private static DatabaseReference mDatabase = null;
     public static HashMap<String,Event> eventMap;
+    public static HashMap<Integer,String> joinedEvents;
     private Database(){};
     private static DatabaseReference getDatabaseReference(){
         if(mDatabase == null) {
             mDatabase = FirebaseDatabase.getInstance().getReference();
             eventMap = new HashMap<String, Event>();
+            joinedEvents = new HashMap<Integer, String>();
         }
         return mDatabase;
     }
 
-    public static void createEvent(String name, String description, Date data , double latitude, double longitude){
+    public static void createEvent(String name, String description, Date data , double latitude, double longitude) {
         String key = getDatabaseReference().child("events").push().getKey();
         Event event = new Event(name,description,data,latitude,longitude);
         getDatabaseReference().child("events").child(key).setValue(event).addOnFailureListener(new OnFailureListener() {
@@ -72,11 +72,48 @@ public class Database {
             // daca citirea a esuat
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Log.e("loadPost:onCancelled", databaseError.toString());
+                Log.e("Cancelled", databaseError.toString());
             }
         };
         // Querry
         getDatabaseReference().child("events").limitToFirst(numberOfEvents).addValueEventListener(eventListener);
+    }
+
+    public static void getJoinedEvents(String id){
+        getDatabaseReference().child("user-data").child(id).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if(dataSnapshot.exists()){
+                        joinedEvents = (HashMap<Integer, String>) dataSnapshot.getValue();
+                        MapFragment.ColorMarkers();
+                    }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.e("Canceled",databaseError.toString());
+            }
+        });
+    }
+
+    public static void JoinEvent(final String userId, final String eventId){
+        getDatabaseReference().child("user-data").child(userId).orderByValue().equalTo(eventId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(!dataSnapshot.exists()) {
+                    String key = dataSnapshot.getRef().push().getKey();
+                    dataSnapshot.getRef().child(key).setValue(eventId);
+                }else {
+                    for(DataSnapshot d:dataSnapshot.getChildren()){
+                        if (d.getValue().equals(eventId))
+                            d.getRef().removeValue();
+                    }
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.e("Canceled",databaseError.toString());
+            }
+        });
     }
 }
 

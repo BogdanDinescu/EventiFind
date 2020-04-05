@@ -4,6 +4,7 @@ import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,6 +19,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -34,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import static android.content.Context.LOCATION_SERVICE;
 
@@ -42,6 +46,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     private static GoogleMap gMap;
     private MapView mapView;
     private static List<Marker> markers;
+    private GoogleSignInAccount account;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -61,6 +66,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     // atunci cand harta a fost creata se pot efectua actiuni
     public void onMapReady(GoogleMap googleMap) {
         gMap = googleMap;
+        account = GoogleSignIn.getLastSignedInAccount(getActivity());
         googleMap.setOnMapLongClickListener(this);
         googleMap.setOnInfoWindowClickListener(this);
         googleMap.setInfoWindowAdapter(this);
@@ -77,20 +83,31 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                     .build();
             gMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         }
-
+        markers = new ArrayList<Marker>();
         // obtine lista cu event-urile din imprejur si tot aceasta functie apeleaza addMarkers
         Database.queryClosestEvents(location,10);
+        // obtine evenimentele la care participa userul cu id-ul respectiv
+        Database.getJoinedEvents(account.getId());
     }
 
     public static void addMarkers(){
-        markers = new ArrayList<Marker>();
         for(Map.Entry<String,Event> e: Database.eventMap.entrySet()) {
             LatLng point = new LatLng(e.getValue().getLatitude(), e.getValue().getLongitude());
             MarkerOptions markerOptions = new MarkerOptions().
                     position(point)
                     .title(e.getKey())
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
             markers.add(gMap.addMarker(markerOptions));
+        }
+    }
+
+    public static void ColorMarkers(){
+        for (Marker m: markers){
+            if(Database.joinedEvents.containsValue(m.getTitle())){
+                m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
+            }else {
+                m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
+            }
         }
     }
 
@@ -105,6 +122,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         Event event = Database.eventMap.get(key);
 
         View markerView = getLayoutInflater().inflate(R.layout.custom_marker_window, null);
+        TextView join = markerView.findViewById(R.id.join);
+        if(Database.joinedEvents.containsValue(marker.getTitle())){
+            join.setText(getActivity().getResources().getString(R.string.Unjoin));
+        }else {
+            join.setText(getActivity().getResources().getString(R.string.Join));
+        }
         TextView title = markerView.findViewById(R.id.title);
         title.setText(event.getName());
         TextView date = markerView.findViewById(R.id.date);
@@ -117,7 +140,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     // la click pe "mini-fereastra" care apare cand dai click pe un marker
     @Override
     public void onInfoWindowClick(Marker marker) {
-        Toast toast = Toast.makeText(getContext(), "Text temporar", Toast.LENGTH_SHORT);
+        marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
+        marker.hideInfoWindow();
+        Database.JoinEvent(account.getId(),marker.getTitle());
+        Toast toast = Toast.makeText(getContext(), "Event joined", Toast.LENGTH_SHORT);
         toast.show();
     }
 

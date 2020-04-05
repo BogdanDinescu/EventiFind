@@ -15,4 +15,6 @@
     <string name="Fields_empty">Fields must not be empty</string>
     <string name="Event_created">Event created</string>
     <string name="Unnamed_location">Unnamed location</string>
+    <string name="Join">Tap to join</string>
+    <string name="Unjoin">Tap to unjoin</string>
 </resources>

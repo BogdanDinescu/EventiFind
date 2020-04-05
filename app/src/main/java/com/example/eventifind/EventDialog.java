@@ -94,7 +94,7 @@ public class EventDialog extends DialogFragment {
                     try {
                         Database.createEvent(name,description,date,latitude,longitude);
                         showToast(getActivity().getResources().getString(R.string.Event_created));
-                    }catch (RuntimeException e){
+                    }catch (Exception e){
                         showToast(e.getMessage());
                     }
                     EventDialog.this.getDialog().cancel();
