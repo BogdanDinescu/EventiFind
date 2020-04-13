@@ -68,6 +68,7 @@ public class Database {
                     }
                 }
                 MapFragment.addMarkers();
+                MapFragment.ColorMarkers();
             }
             // daca citirea a esuat
             @Override
@@ -85,8 +86,8 @@ public class Database {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     if(dataSnapshot.exists()){
                         joinedEvents = (HashMap<Integer, String>) dataSnapshot.getValue();
-                        MapFragment.ColorMarkers();
                     }
+                    MapFragment.ColorMarkers();
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {

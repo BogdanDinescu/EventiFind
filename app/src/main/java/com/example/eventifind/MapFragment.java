@@ -95,8 +95,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             LatLng point = new LatLng(e.getValue().getLatitude(), e.getValue().getLongitude());
             MarkerOptions markerOptions = new MarkerOptions().
                     position(point)
-                    .title(e.getKey())
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
+                    .title(e.getKey());
             markers.add(gMap.addMarker(markerOptions));
         }
     }
@@ -124,9 +123,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         View markerView = getLayoutInflater().inflate(R.layout.custom_marker_window, null);
         TextView join = markerView.findViewById(R.id.join);
         if(Database.joinedEvents.containsValue(marker.getTitle())){
-            join.setText(getActivity().getResources().getString(R.string.Unjoin));
+            join.setText(getResources().getString(R.string.Unjoin));
         }else {
-            join.setText(getActivity().getResources().getString(R.string.Join));
+            join.setText(getResources().getString(R.string.Join));
         }
         TextView title = markerView.findViewById(R.id.title);
         title.setText(event.getName());
@@ -137,13 +136,18 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         return markerView;
     }
 
-    // la click pe "mini-fereastra" care apare cand dai click pe un marker
+    // la click pe "mini-fereastra" care apare cand dai click pe un marker (join/unjoin)
     @Override
     public void onInfoWindowClick(Marker marker) {
         marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
         marker.hideInfoWindow();
         Database.JoinEvent(account.getId(),marker.getTitle());
-        Toast toast = Toast.makeText(getContext(), "Event joined", Toast.LENGTH_SHORT);
+        Toast toast;
+        if(Database.joinedEvents.containsValue(marker.getTitle())) {
+             toast = Toast.makeText(getContext(), getResources().getString(R.string.Unjoined), Toast.LENGTH_LONG);
+        } else {
+            toast = Toast.makeText(getContext(), getResources().getString(R.string.Joined), Toast.LENGTH_LONG);
+        }
         toast.show();
     }
 

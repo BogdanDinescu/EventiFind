@@ -17,4 +17,6 @@
     <string name="Unnamed_location">Unnamed location</string>
     <string name="Join">Tap to join</string>
     <string name="Unjoin">Tap to unjoin</string>
+    <string name="Joined">Event joined</string>
+    <string name="Unjoined">Event unjoined</string>
 </resources>
