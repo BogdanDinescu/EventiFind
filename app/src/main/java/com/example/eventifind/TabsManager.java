@@ -59,13 +59,29 @@ class TabsManager {
         tabLayout.getTabAt(3).setIcon(R.drawable.ic_account);
     }
 
+    public FeedFragment getFeedFragment() {
+        return feedFragment;
+    }
+
+    public MapFragment getMapFragment() {
+        return mapFragment;
+    }
+
+    public CalendarFragment getCalendarFragment() {
+        return calendarFragment;
+    }
+
+    public AccountFragment getAccountFragment() {
+        return accountFragment;
+    }
+
     // clasa care tine evidenta fragmentelor
     private class viewPagerAdapter extends FragmentPagerAdapter {
         private List<Fragment> fragments = new ArrayList<>();
         private List<String> fragmentTitle = new ArrayList<>();
 
         viewPagerAdapter() {
-            super(fragmentManager,0);
+            super(fragmentManager,BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         }
 
         void addFragment(Fragment fragment, String title){

@@ -23,13 +23,13 @@ import java.util.List;
 public class Database {
     private static DatabaseReference mDatabase = null;
     public static HashMap<String,Event> eventMap;
-    public static HashMap<Integer,String> joinedEvents;
+    public static ArrayList<String> joinedEvents;
     private Database(){};
     private static DatabaseReference getDatabaseReference(){
         if(mDatabase == null) {
             mDatabase = FirebaseDatabase.getInstance().getReference();
             eventMap = new HashMap<String, Event>();
-            joinedEvents = new HashMap<Integer, String>();
+            joinedEvents = new ArrayList<String>();
         }
         return mDatabase;
     }
@@ -68,7 +68,7 @@ public class Database {
                     }
                 }
                 MapFragment.addMarkers();
-                MapFragment.ColorMarkers();
+                MapFragment.colorMarkers();
             }
             // daca citirea a esuat
             @Override
@@ -85,9 +85,11 @@ public class Database {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     if(dataSnapshot.exists()){
-                        joinedEvents = (HashMap<Integer, String>) dataSnapshot.getValue();
+                        HashMap<String, String> joinedEventsMap = (HashMap<String, String>) dataSnapshot.getValue();
+                        joinedEvents.clear();
+                        joinedEvents.addAll(joinedEventsMap.values());
                     }
-                    MapFragment.ColorMarkers();
+                    MapFragment.colorMarkers();
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {

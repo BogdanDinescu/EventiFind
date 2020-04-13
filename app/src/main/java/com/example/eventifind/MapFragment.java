@@ -1,5 +1,6 @@
 package com.example.eventifind;
 
+import android.content.Context;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
@@ -35,7 +36,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 
 import static android.content.Context.LOCATION_SERVICE;
 
@@ -70,22 +70,20 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         googleMap.setInfoWindowAdapter(this);
 
         // obtine locatia curenta
-        Location location = getCurrentLocation();
+        Location location = getCurrentLocation(getContext());
 
         // se centreaza camera pe locatia curenta
         if (location != null) {
             gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
             CameraPosition cameraPosition = new CameraPosition.Builder()
-                    .target(new LatLng(location.getLatitude(), location.getLongitude()))      // Sets the center of the map to location user
+                    .target(new LatLng(location.getLatitude(), location.getLongitude()))
                     .zoom(15)
                     .build();
             gMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         }
         markers = new ArrayList<Marker>();
-        // obtine lista cu event-urile din imprejur si tot aceasta functie apeleaza addMarkers
-        Database.queryClosestEvents(location,10);
-        // obtine evenimentele la care participa userul cu id-ul respectiv
-        Database.getJoinedEvents(account.getId());
+        addMarkers();
+        colorMarkers();
     }
 
     public static void addMarkers(){
@@ -98,9 +96,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         }
     }
 
-    public static void ColorMarkers(){
+    public static void colorMarkers(){
         for (Marker m: markers){
-            if(Database.joinedEvents.containsValue(m.getTitle())){
+            if(Database.joinedEvents.contains(m.getTitle())){
                 m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
             }else {
                 m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
@@ -120,7 +118,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
         View markerView = getLayoutInflater().inflate(R.layout.custom_marker_window, null);
         TextView join = markerView.findViewById(R.id.join);
-        if(Database.joinedEvents.containsValue(marker.getTitle())){
+        if(Database.joinedEvents.contains(marker.getTitle())){
             join.setText(getResources().getString(R.string.Unjoin));
         }else {
             join.setText(getResources().getString(R.string.Join));
@@ -141,7 +139,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         marker.hideInfoWindow();
         Database.JoinEvent(account.getId(),marker.getTitle());
         Toast toast;
-        if(Database.joinedEvents.containsValue(marker.getTitle())) {
+        if(Database.joinedEvents.contains(marker.getTitle())) {
              toast = Toast.makeText(getContext(), getResources().getString(R.string.Unjoined), Toast.LENGTH_LONG);
         } else {
             toast = Toast.makeText(getContext(), getResources().getString(R.string.Joined), Toast.LENGTH_LONG);
@@ -170,8 +168,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         return getActivity().getResources().getString(R.string.Unnamed_location);
     }
 
-    private Location getCurrentLocation() {
-        LocationManager service = (LocationManager) getContext().getSystemService(LOCATION_SERVICE);
+    public Location getCurrentLocation(Context context) {
+        LocationManager service = (LocationManager) context.getSystemService(LOCATION_SERVICE);
         Criteria criteria = new Criteria();
         String provider = service.getBestProvider(criteria, false);
         Location location = null;

@@ -10,6 +10,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 
 public class MainActivity extends AppCompatActivity {
@@ -20,8 +23,6 @@ public class MainActivity extends AppCompatActivity {
         setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        //GoogleSignInAccount account = getIntent().getSerializableExtra("account");
 
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -36,6 +37,11 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION}, 225);
         }else{
             tabsManager.CreateTabs();
+            // obtine lista cu event-urile din imprejur si tot aceasta functie apeleaza addMarkers
+            Database.queryClosestEvents(tabsManager.getMapFragment().getCurrentLocation(this),10);
+            // obtine evenimentele la care participa userul cu id-ul respectiv
+            GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+            Database.getJoinedEvents(account.getId());
         }
     }
 
