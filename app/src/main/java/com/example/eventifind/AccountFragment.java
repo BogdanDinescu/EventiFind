@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
@@ -41,7 +42,7 @@ public class AccountFragment extends Fragment {
         TextView name = view.findViewById(R.id.account_name);
         name.setText(account.getDisplayName());
         ImageView picture = view.findViewById(R.id.account_picture);
-        Glide.with(this).load(account.getPhotoUrl()).into(picture);
+        Glide.with(this).load(account.getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(picture);
     }
 
     private void gotoLogin() {
