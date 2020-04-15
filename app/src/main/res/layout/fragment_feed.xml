@@ -5,10 +5,9 @@
     android:layout_height="match_parent"
     tools:context=".FeedFragment">
 
-    <!-- Sterge textul placeholder mai tarziu -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Aici va fi feed-ul" />
+        android:text="@string/Feed"/>
 
 </FrameLayout>

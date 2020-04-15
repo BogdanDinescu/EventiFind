@@ -7,12 +7,49 @@
     android:layout_height="match_parent"
     tools:context=".AccountFragment" >
 
+    <ImageView
+        android:id="@+id/account_picture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:minWidth="100dp"
+        android:maxWidth="200dp"
+        android:minHeight="100dp"
+        android:maxHeight="200dp"
+        android:layout_margin="10dp" />
+
+    <TextView
+        android:id="@+id/account_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textSize="18sp"
+        app:layout_constraintTop_toBottomOf="@id/account_picture"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:textColor="@android:color/black"
+        android:layout_margin="10dp" />
+
     <Button
         android:id="@+id/log_out_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/Log_out"
+        app:layout_constraintTop_toBottomOf="@id/account_name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         tools:layout_editor_absoluteY="149dp" />
+
+    <ListView
+        android:id="@+id/list_event"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/log_out_button"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constrainedHeight="true"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

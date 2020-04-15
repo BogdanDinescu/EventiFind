@@ -1,19 +1,28 @@
 package com.example.eventifind;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
 
 public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
+    private TabsManager tabsManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        //GoogleSignInAccount account = getIntent().getSerializableExtra("account");
 
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -21,7 +30,32 @@ public class MainActivity extends AppCompatActivity {
         //getSupportActionBar().setDisplayShowHomeEnabled(true);
         //getSupportActionBar().setIcon(R.mipmap.ic_launcher);
 
-        TabsManager tabsManager = new TabsManager(this, getSupportFragmentManager());
+        tabsManager = new TabsManager(this, getSupportFragmentManager());
+        // verifica permisiunile
+        // daca nu sunt permise se cere permisiunea
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION}, 225);
+        }else{
+            tabsManager.CreateTabs();
+            // obtine lista cu event-urile din imprejur si tot aceasta functie apeleaza addMarkers
+            Database.queryClosestEvents(tabsManager.getMapFragment().getCurrentLocation(this),10);
+            // obtine evenimentele la care participa userul cu id-ul respectiv
+            GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+            Database.getJoinedEvents(account.getId());
+        }
+    }
+
+    // cand au fost acceptate sau respinse permisiunile se apeleaza functia asta
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        // daca una a fost respinse se inchide aplicatia (solutie temporara neeleganta)
+        for(int i:grantResults){
+            if(i == PERMISSION_DENIED){
+                finishAndRemoveTask();
+                return;
+            }
+        }
         tabsManager.CreateTabs();
     }
 
