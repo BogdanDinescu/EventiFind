@@ -183,7 +183,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     public void showDialog(double latitude, double longitude,String address){
         DialogFragment newFragment = new EventDialog(latitude,longitude,address);
-        newFragment.show(getFragmentManager(), "eventDialog");
+        newFragment.show(getFragmentManager(), "even2tDialog");
     }
 
 }
