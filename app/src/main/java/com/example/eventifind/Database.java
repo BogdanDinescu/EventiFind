@@ -98,8 +98,9 @@ public class Database {
         });
     }
 
-    // Il adauga la joined daca nu e deja, altfel il sterge
-    public static void JoinEvent(final String userId, final String eventId){
+    // Il adauga la joined (return true) daca nu e deja, altfel il sterge (return false)
+    public static boolean JoinEvent(final String userId, final String eventId){
+        final boolean[] join = {true};
         getDatabaseReference().child("user-data").child(userId).orderByValue().equalTo(eventId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -110,6 +111,7 @@ public class Database {
                     for(DataSnapshot d:dataSnapshot.getChildren()){
                         if (d.getValue().equals(eventId))
                             d.getRef().removeValue();
+                            join[0] = false;
                     }
                 }
             }
@@ -118,6 +120,7 @@ public class Database {
                 Log.e("Canceled",databaseError.toString());
             }
         });
+        return join[0];
     }
 }
 

@@ -59,6 +59,10 @@ class TabsManager {
         tabLayout.getTabAt(3).setIcon(R.drawable.ic_account);
     }
 
+    public void setCurrentTab(int index){
+        viewPager.setCurrentItem(index,true);
+    }
+
     public FeedFragment getFeedFragment() {
         return feedFragment;
     }

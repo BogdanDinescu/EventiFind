@@ -27,6 +27,7 @@ public class AccountFragment extends Fragment {
     private Button joinedEvBtn;
     private Button myEvBtn;
     private static ListView listView;
+    private GoogleSignInAccount account;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
@@ -40,6 +41,7 @@ public class AccountFragment extends Fragment {
         joinedEvBtn = view.findViewById(R.id.joined_events);
         myEvBtn = view.findViewById(R.id.my_events);
         listView = view.findViewById(R.id.list_event);
+        account = GoogleSignIn.getLastSignedInAccount(getActivity());
 
         // cand este apasat sign out
         signOutBtn.setOnClickListener(new View.OnClickListener() {
@@ -66,16 +68,14 @@ public class AccountFragment extends Fragment {
             }
         });
 
-        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(getActivity());
         TextView name = view.findViewById(R.id.account_name);
         name.setText(account.getDisplayName());
         ImageView picture = view.findViewById(R.id.account_picture);
         Glide.with(this).load(account.getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(picture);
-
     }
 
     private void addJoinedEventsToList() {
-        AdapterList adapter = new AdapterList(Database.joinedEvents);
+        AdapterList adapter = new AdapterList(Database.joinedEvents, (MainActivity) getActivity(),account.getId());
         listView.setAdapter(adapter);
     }
 
