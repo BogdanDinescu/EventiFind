@@ -98,6 +98,7 @@ public class Database {
         });
     }
 
+    // Il adauga la joined daca nu e deja, altfel il sterge
     public static void JoinEvent(final String userId, final String eventId){
         getDatabaseReference().child("user-data").child(userId).orderByValue().equalTo(eventId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

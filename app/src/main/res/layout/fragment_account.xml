@@ -7,46 +7,75 @@
     android:layout_height="match_parent"
     tools:context=".AccountFragment" >
 
-    <ImageView
-        android:id="@+id/account_picture"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:minWidth="100dp"
-        android:maxWidth="200dp"
-        android:minHeight="100dp"
-        android:maxHeight="200dp"
-        android:layout_margin="10dp" />
 
-    <TextView
-        android:id="@+id/account_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/account_picture"
-        app:layout_constraintEnd_toEndOf="parent"
+    <LinearLayout
+        android:id="@+id/account_info"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:textColor="@android:color/black"
-        android:layout_margin="10dp" />
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:id="@+id/account_picture"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="100dp"
+            android:minHeight="100dp"
+            android:maxWidth="200dp"
+            android:maxHeight="200dp"
+            android:layout_margin="10dp" />
+
+        <TextView
+            android:id="@+id/account_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:textAlignment="center"
+            android:textColor="@android:color/black"
+            android:textSize="18sp" />
+
+    </LinearLayout>
 
     <Button
         android:id="@+id/log_out_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/Log_out"
-        app:layout_constraintTop_toBottomOf="@id/account_name"
+        android:backgroundTint="@color/colorAccent"
+        app:layout_constraintTop_toBottomOf="@id/account_info"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         tools:layout_editor_absoluteY="149dp" />
+
+    <Button
+        android:id="@+id/joined_events"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Joined_events"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/log_out_button"
+        app:layout_constraintEnd_toStartOf="@id/my_events"
+        />
+
+    <Button
+        android:id="@+id/my_events"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Joined_events"
+        app:layout_constraintStart_toEndOf="@id/joined_events"
+        app:layout_constraintTop_toBottomOf="@id/log_out_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
 
     <ListView
         android:id="@+id/list_event"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/log_out_button"
+        android:divider="@android:color/darker_gray"
+        app:layout_constraintTop_toBottomOf="@id/joined_events"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

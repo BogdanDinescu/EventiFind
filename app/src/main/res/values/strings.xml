@@ -19,4 +19,6 @@
     <string name="Unjoin">Tap to unjoin</string>
     <string name="Joined">Event joined</string>
     <string name="Unjoined">Event unjoined</string>
+    <string name="Joined_events">Joined Events</string>
+    <string name="My_events">My events</string>
 </resources>

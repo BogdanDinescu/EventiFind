@@ -1,8 +1,8 @@
 package com.example.eventifind;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,9 +10,11 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
@@ -22,6 +24,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
 public class AccountFragment extends Fragment {
     private Button signOutBtn;
+    private Button joinedEvBtn;
+    private Button myEvBtn;
     private static ListView listView;
 
     @Override
@@ -33,14 +37,32 @@ public class AccountFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         signOutBtn = view.findViewById(R.id.log_out_button);
+        joinedEvBtn = view.findViewById(R.id.joined_events);
+        myEvBtn = view.findViewById(R.id.my_events);
         listView = view.findViewById(R.id.list_event);
 
         // cand este apasat sign out
         signOutBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                LoginActivity.signOut();
-                gotoLogin();
+                logout();
+            }
+        });
+
+        // cand e apasat joined events
+        joinedEvBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addJoinedEventsToList();
+            }
+        });
+
+        // cand e apasat my events
+        myEvBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast toast = Toast.makeText(getContext(),"Nu merge inca",Toast.LENGTH_SHORT);
+                toast.show();
             }
         });
 
@@ -49,18 +71,32 @@ public class AccountFragment extends Fragment {
         name.setText(account.getDisplayName());
         ImageView picture = view.findViewById(R.id.account_picture);
         Glide.with(this).load(account.getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(picture);
-        addEventsToList();
+
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        addEventsToList();
-    }
-
-    private void addEventsToList() {
+    private void addJoinedEventsToList() {
         AdapterList adapter = new AdapterList(Database.joinedEvents);
         listView.setAdapter(adapter);
+    }
+
+    private void logout(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("You really want to logout?");
+        builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                LoginActivity.signOut();
+                gotoLogin();
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 
     private void gotoLogin() {
