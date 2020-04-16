@@ -97,7 +97,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     public void colorMarkers(){
         for (Marker m: markers){
             if(activity.getDatabase().joinedEvents.contains(m.getTitle())){
-                m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
+                m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
             }else {
                 m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
             }
@@ -133,7 +133,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     // la click pe "mini-fereastra" care apare cand dai click pe un marker (join/unjoin)
     @Override
     public void onInfoWindowClick(Marker marker) {
-        marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
+        //marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
         marker.hideInfoWindow();
         Toast toast;
         if(activity.getDatabase().joinedEvents.contains(marker.getTitle())) {
