@@ -1,6 +1,5 @@
 package com.example.eventifind;
 
-import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,47 +7,49 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 // clasa aceasta este responsabila de adaptarea unui map de obiecte Event in ListView
 public class AdapterList extends BaseAdapter {
-    private final ArrayList<Event> eventList;
-    private MainActivity activity;
-    private String userId;
+    private final HashMap<String,Event> map;
+    private final ArrayList<String> keyList;
+    private final MainActivity activity;
+    private final String userId;
 
     public AdapterList(HashMap<String,Event> map, MainActivity activity, String userId){
-        eventList = new ArrayList<Event>();
-        eventList.addAll(map.values());
+        this.map = map;
+        this.keyList = new ArrayList<String>(map.keySet());
         this.activity = activity;
         this.userId = userId;
     }
 
     public AdapterList(ArrayList<String> list, MainActivity activity, String userId){
-        eventList = new ArrayList<Event>();
-        for(Map.Entry<String,Event> e : Database.eventMap.entrySet()){
+        this.map = new HashMap<>();
+        for(Map.Entry<String,Event> e : activity.getDatabase().eventMap.entrySet()){
             if(list.contains(e.getKey())){
-                eventList.add(e.getValue());
+                map.put(e.getKey(),e.getValue());
             }
         }
+        this.keyList = new ArrayList<>(list);
         this.activity = activity;
         this.userId = userId;
     }
 
     @Override
     public int getCount() {
-        return eventList.size();
+        return keyList.size();
     }
 
     @Override
     public Event getItem(int position) {
-        return (Event) eventList.get(position);
+        return map.get(keyList.get(position));
+    }
+
+    public String getKey(int position){
+        return keyList.get(position);
     }
 
     @Override
@@ -57,7 +58,7 @@ public class AdapterList extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         final View listItem;
         if(convertView == null){
             listItem = LayoutInflater.from(parent.getContext()).inflate(R.layout.event_card,parent,false);
@@ -76,8 +77,8 @@ public class AdapterList extends BaseAdapter {
         dateText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CalendarFragment.focusOnDate(item.getDate());
                 activity.getTabsManager().setCurrentTab(2);
+                activity.getTabsManager().getCalendarFragment().focusOnDate(item.getDate());
             }
         });
         // Locatie
@@ -86,14 +87,33 @@ public class AdapterList extends BaseAdapter {
         locationText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MapFragment.setCentralPoint(item.getLatitude(),item.getLongitude());
                 activity.getTabsManager().setCurrentTab(1);
+                activity.getTabsManager().getMapFragment().centreOnPoint(item.getLatitude(),item.getLongitude());
             }
         });
 
-        // Join Button
-        Button joinButton = listItem.findViewById(R.id.join);
-        
+        // Join/unjoin Button
+        final Button joinButton = listItem.findViewById(R.id.join);
+        if(activity.getDatabase().joinedEvents.contains(getKey(position))) {
+            joinButton.setBackgroundColor(activity.getResources().getColor(R.color.colorAccent));
+            joinButton.setText(activity.getResources().getString(R.string.Unjoin));
+        } else {
+            joinButton.setBackgroundColor(activity.getResources().getColor(R.color.colorPrimary));
+            joinButton.setText(activity.getResources().getString(R.string.Join));
+        }
+        joinButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(joinButton.getText() == activity.getResources().getString(R.string.Join)) {
+                    joinButton.setBackgroundColor(activity.getResources().getColor(R.color.colorAccent));
+                    joinButton.setText(activity.getResources().getString(R.string.Unjoin));
+                } else {
+                    joinButton.setBackgroundColor(activity.getResources().getColor(R.color.colorPrimary));
+                    joinButton.setText(activity.getResources().getString(R.string.Join));
+                }
+                activity.getDatabase().joinEvent(userId,getKey(position));
+            }
+        });
         return listItem;
     }
 }

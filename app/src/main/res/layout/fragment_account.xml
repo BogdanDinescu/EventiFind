@@ -64,7 +64,7 @@
         android:id="@+id/my_events"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/Joined_events"
+        android:text="@string/My_events"
         app:layout_constraintStart_toEndOf="@id/joined_events"
         app:layout_constraintTop_toBottomOf="@id/log_out_button"
         app:layout_constraintEnd_toEndOf="parent"
@@ -72,7 +72,7 @@
 
     <ListView
         android:id="@+id/list_event"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:divider="@android:color/darker_gray"
         android:dividerHeight="2dp"

@@ -26,8 +26,9 @@ public class AccountFragment extends Fragment {
     private Button signOutBtn;
     private Button joinedEvBtn;
     private Button myEvBtn;
-    private static ListView listView;
+    private ListView listView;
     private GoogleSignInAccount account;
+    private MainActivity activity;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
@@ -42,6 +43,7 @@ public class AccountFragment extends Fragment {
         myEvBtn = view.findViewById(R.id.my_events);
         listView = view.findViewById(R.id.list_event);
         account = GoogleSignIn.getLastSignedInAccount(getActivity());
+        activity = (MainActivity) getActivity();
 
         // cand este apasat sign out
         signOutBtn.setOnClickListener(new View.OnClickListener() {
@@ -75,7 +77,7 @@ public class AccountFragment extends Fragment {
     }
 
     private void addJoinedEventsToList() {
-        AdapterList adapter = new AdapterList(Database.joinedEvents, (MainActivity) getActivity(),account.getId());
+        AdapterList adapter = new AdapterList(activity.getDatabase().joinedEvents, activity, account.getId());
         listView.setAdapter(adapter);
     }
 

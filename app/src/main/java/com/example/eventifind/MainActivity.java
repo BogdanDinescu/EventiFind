@@ -10,6 +10,7 @@ import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -22,19 +23,23 @@ import static android.content.pm.PackageManager.PERMISSION_DENIED;
 public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private TabsManager tabsManager;
+    private Database database;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         //getSupportActionBar().setDisplayShowTitleEnabled(false);
         //getSupportActionBar().setDisplayShowHomeEnabled(true);
         //getSupportActionBar().setIcon(R.mipmap.ic_launcher);
 
+        // initializari
+        database = new Database(this);
         tabsManager = new TabsManager(this, getSupportFragmentManager());
+
         // verifica permisiunile
         // daca nu sunt permise se cere permisiunea
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -43,13 +48,19 @@ public class MainActivity extends AppCompatActivity {
             tabsManager.CreateTabs();
             try {
                 // obtine lista cu event-urile din imprejur si tot aceasta functie apeleaza addMarkers
-                Database.queryClosestEvents(tabsManager.getMapFragment().getCurrentLocation(this),10);
+                Location location = tabsManager.getMapFragment().getCurrentLocation(this);
+                if (location == null) {
+                    throw new NullPointerException();
+                }
+                database.queryClosestEvents(location,10);
             } catch (ConnectException e) {
                 EnableDialog();
+            } catch (NullPointerException e) {
+                finish();
             }
             // obtine evenimentele la care participa userul cu id-ul respectiv
             GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-            Database.getJoinedEvents(account.getId());
+            database.getJoinedEvents(account.getId());
         }
     }
 
@@ -71,12 +82,16 @@ public class MainActivity extends AppCompatActivity {
         return tabsManager;
     }
 
+    public Database getDatabase() {
+        return database;
+    }
+
     private void EnableDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Enable Internet service and Location");
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                finishAndRemoveTask();
+                finish();
             }
         });
         AlertDialog alert = builder.create();

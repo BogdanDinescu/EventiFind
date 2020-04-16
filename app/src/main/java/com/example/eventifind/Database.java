@@ -20,12 +20,17 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-public class Database {
-    private static DatabaseReference mDatabase = null;
-    public static HashMap<String,Event> eventMap;
-    public static ArrayList<String> joinedEvents;
-    private Database(){};
-    private static DatabaseReference getDatabaseReference(){
+public final class Database {
+    private DatabaseReference mDatabase = null;
+    public HashMap<String,Event> eventMap;
+    public ArrayList<String> joinedEvents;
+    private MainActivity activity;
+
+    public Database(MainActivity context){
+        this.activity = context;
+    };
+
+    private DatabaseReference getDatabaseReference(){
         if(mDatabase == null) {
             mDatabase = FirebaseDatabase.getInstance().getReference();
             eventMap = new HashMap<String, Event>();
@@ -34,7 +39,7 @@ public class Database {
         return mDatabase;
     }
 
-    public static void createEvent(String name, String description, Date data , double latitude, double longitude) {
+    public void createEvent(String name, String description, Date data , double latitude, double longitude) {
         String key = getDatabaseReference().child("events").push().getKey();
         Event event = new Event(name,description,data,latitude,longitude);
         getDatabaseReference().child("events").child(key).setValue(event).addOnFailureListener(new OnFailureListener() {
@@ -45,7 +50,7 @@ public class Database {
         });
     }
 
-    public static void queryClosestEvents(Location location, Integer numberOfEvents){
+    public void queryClosestEvents(Location location, Integer numberOfEvents){
         // obtine hash-ul pentru locatia data
         final GeoHash hash = GeoHash.fromLocation(location,4);
         // obtine regiunile din imprejur
@@ -67,8 +72,9 @@ public class Database {
                         eventMap.put(eventSnapshot.getKey(),eventSnapshot.getValue(Event.class));
                     }
                 }
-                MapFragment.addMarkers();
-                MapFragment.colorMarkers();
+                activity.getTabsManager().getMapFragment().addMarkers();
+                activity.getTabsManager().getMapFragment().colorMarkers();
+                activity.getTabsManager().getFeedFragment().loadFeed();
             }
             // daca citirea a esuat
             @Override
@@ -80,7 +86,7 @@ public class Database {
         getDatabaseReference().child("events").limitToFirst(numberOfEvents).addValueEventListener(eventListener);
     }
 
-    public static void getJoinedEvents(String id){
+    public void getJoinedEvents(String id){
         getDatabaseReference().child("user-data").child(id).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -89,7 +95,7 @@ public class Database {
                         joinedEvents.clear();
                         joinedEvents.addAll(joinedEventsMap.values());
                     }
-                    MapFragment.colorMarkers();
+                    activity.getTabsManager().getMapFragment().colorMarkers();
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -99,8 +105,7 @@ public class Database {
     }
 
     // Il adauga la joined (return true) daca nu e deja, altfel il sterge (return false)
-    public static boolean JoinEvent(final String userId, final String eventId){
-        final boolean[] join = {true};
+    public void joinEvent(final String userId, final String eventId){
         getDatabaseReference().child("user-data").child(userId).orderByValue().equalTo(eventId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -111,7 +116,6 @@ public class Database {
                     for(DataSnapshot d:dataSnapshot.getChildren()){
                         if (d.getValue().equals(eventId))
                             d.getRef().removeValue();
-                            join[0] = false;
                     }
                 }
             }
@@ -120,7 +124,6 @@ public class Database {
                 Log.e("Canceled",databaseError.toString());
             }
         });
-        return join[0];
     }
 }
 

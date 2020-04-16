@@ -7,7 +7,6 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,10 +44,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     private static GoogleMap gMap;
     private MapView mapView;
-    private static List<Marker> markers;
+    private List<Marker> markers;
     private GoogleSignInAccount account;
     private Location currentLocation = null;
-    private static LatLng centralPoint = null;
+    private MainActivity activity;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -62,6 +61,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         mapView.onCreate(savedInstanceState);
         mapView.onResume();
         mapView.getMapAsync(this);
+        activity = (MainActivity) getActivity();
     }
 
     // atunci cand harta a fost creata se pot efectua actiuni
@@ -74,14 +74,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         googleMap.setInfoWindowAdapter(this);
         googleMap.setMyLocationEnabled(true);
 
-        // se centreaza camera pe locatia ceruta
-        if(centralPoint != null) {
-            centreOnPoint(centralPoint.latitude, centralPoint.longitude);
-        } else{
-            // daca nu exista se centreaza pe locatia curenta
-            if(currentLocation != null) {
-                centreOnPoint(currentLocation.getLatitude(), currentLocation.getLongitude());
-            }
+        // centreaza pe locatia curenta
+        if(currentLocation != null) {
+            centreOnPoint(currentLocation.getLatitude(), currentLocation.getLongitude());
         }
 
         markers = new ArrayList<Marker>();
@@ -89,8 +84,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         colorMarkers();
     }
 
-    public static void addMarkers(){
-        for(Map.Entry<String,Event> e: Database.eventMap.entrySet()) {
+    public void addMarkers(){
+        for(Map.Entry<String,Event> e: activity.getDatabase().eventMap.entrySet()) {
             LatLng point = new LatLng(e.getValue().getLatitude(), e.getValue().getLongitude());
             MarkerOptions markerOptions = new MarkerOptions().
                     position(point)
@@ -99,9 +94,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         }
     }
 
-    public static void colorMarkers(){
+    public void colorMarkers(){
         for (Marker m: markers){
-            if(Database.joinedEvents.contains(m.getTitle())){
+            if(activity.getDatabase().joinedEvents.contains(m.getTitle())){
                 m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
             }else {
                 m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
@@ -117,11 +112,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     @Override
     public View getInfoContents(Marker marker) {
         String key = marker.getTitle();
-        Event event = Database.eventMap.get(key);
+        Event event = activity.getDatabase().eventMap.get(key);
 
         View markerView = getLayoutInflater().inflate(R.layout.custom_marker_window, null);
         TextView join = markerView.findViewById(R.id.join);
-        if(Database.joinedEvents.contains(marker.getTitle())){
+        if(activity.getDatabase().joinedEvents.contains(marker.getTitle())){
             join.setText(getResources().getString(R.string.Unjoin));
         }else {
             join.setText(getResources().getString(R.string.Join));
@@ -141,11 +136,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
         marker.hideInfoWindow();
         Toast toast;
-        if(Database.JoinEvent(account.getId(),marker.getTitle())) {
-            toast = Toast.makeText(getContext(), getResources().getString(R.string.Joined), Toast.LENGTH_LONG);
-        } else {
+        if(activity.getDatabase().joinedEvents.contains(marker.getTitle())) {
             toast = Toast.makeText(getContext(), getResources().getString(R.string.Unjoined), Toast.LENGTH_LONG);
+        } else {
+            toast = Toast.makeText(getContext(), getResources().getString(R.string.Joined), Toast.LENGTH_LONG);
         }
+        activity.getDatabase().joinEvent(account.getId(),marker.getTitle());
         toast.show();
     }
 
@@ -190,17 +186,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         return currentLocation;
     }
 
-    private void centreOnPoint(double latitude, double longitude){
+    public void centreOnPoint(double latitude, double longitude){
         LatLng latLng = new LatLng(latitude,longitude);
         CameraPosition cameraPosition = new CameraPosition.Builder()
                 .target(latLng)
                 .zoom(15)
                 .build();
         gMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-    }
-
-    public static void setCentralPoint(double latitude, double longitude){
-        centralPoint = new LatLng(latitude,longitude);
     }
 
     public void showDialog(double latitude, double longitude,String address){

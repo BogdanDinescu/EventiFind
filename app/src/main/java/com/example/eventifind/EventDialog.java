@@ -4,7 +4,6 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.location.Location;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,7 +27,7 @@ import java.util.Locale;
 public class EventDialog extends DialogFragment {
     private EditText textName;
     private EditText textDescription;
-    protected static TextView textDate;
+    public static TextView textDate;
     private TextView textLocation;
     private double latitude;
     private double longitude;
@@ -92,7 +91,7 @@ public class EventDialog extends DialogFragment {
                     // altfel pune evenimentul in baza de date si afieaza un mesaj
                 }else {
                     try {
-                        Database.createEvent(name,description,date,latitude,longitude);
+                        ((MainActivity)getActivity() ).getDatabase().createEvent(name,description,date,latitude,longitude);
                         showToast(getActivity().getResources().getString(R.string.Event_created));
                     }catch (Exception e){
                         showToast(e.getMessage());
@@ -131,6 +130,7 @@ public class EventDialog extends DialogFragment {
 
         public void onDateSet(DatePicker view, int year, int month, int day) {
             // aparent luna se indexeaza de la 0
+
             textDate.setText(day + "/" + (month+1) + "/" + year);
         }
     }

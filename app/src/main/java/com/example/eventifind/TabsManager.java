@@ -52,6 +52,8 @@ class TabsManager {
         viewPagerAdapter.addFragment(accountFragment,this.activity.getResources().getString(R.string.Account));
         // le randez
         viewPager.setAdapter(viewPagerAdapter);
+        // mentine paginile incarcate
+        viewPager.setOffscreenPageLimit(3);
         // pun iconitele
         tabLayout.getTabAt(0).setIcon(R.drawable.ic_feed);
         tabLayout.getTabAt(1).setIcon(R.drawable.ic_pin);
