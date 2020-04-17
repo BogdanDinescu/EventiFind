@@ -62,6 +62,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         mapView.onResume();
         mapView.getMapAsync(this);
         activity = (MainActivity) getActivity();
+        markers = new ArrayList<Marker>();
     }
 
     // atunci cand harta a fost creata se pot efectua actiuni
@@ -78,10 +79,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         if(currentLocation != null) {
             centreOnPoint(currentLocation.getLatitude(), currentLocation.getLongitude());
         }
-
-        markers = new ArrayList<Marker>();
-        addMarkers();
-        colorMarkers();
     }
 
     public void addMarkers(){
@@ -97,7 +94,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     public void colorMarkers(){
         for (Marker m: markers){
             if(activity.getDatabase().joinedEvents.contains(m.getTitle())){
-                m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
             }else {
                 m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
             }

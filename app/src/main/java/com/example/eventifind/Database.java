@@ -75,6 +75,7 @@ public final class Database {
                 activity.getTabsManager().getMapFragment().addMarkers();
                 activity.getTabsManager().getMapFragment().colorMarkers();
                 activity.getTabsManager().getFeedFragment().loadFeed();
+                activity.hideProgressBar();
             }
             // daca citirea a esuat
             @Override
