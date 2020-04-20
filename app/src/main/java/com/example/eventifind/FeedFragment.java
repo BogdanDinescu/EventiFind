@@ -18,7 +18,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 public class FeedFragment extends Fragment {
 
     private static ListView listView;
-    private GoogleSignInAccount account;
     private MainActivity activity;
 
     @Override
@@ -29,7 +28,6 @@ public class FeedFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        account = GoogleSignIn.getLastSignedInAccount(getActivity());
         listView = view.findViewById(R.id.feed_list);
         activity = (MainActivity) getActivity();
     }
@@ -42,7 +40,7 @@ public class FeedFragment extends Fragment {
 
     public void loadFeed(){
         super.onResume();
-        AdapterList adapter = new AdapterList(activity.getDatabase().eventMap, activity, account.getId());
+        AdapterList adapter = new AdapterList(activity.getDatabase().eventMap, activity, activity.getUserId());
         listView.setAdapter(adapter);
     }
 

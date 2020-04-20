@@ -45,7 +45,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     private static GoogleMap gMap;
     private MapView mapView;
     private List<Marker> markers;
-    private GoogleSignInAccount account;
     private Location currentLocation = null;
     private MainActivity activity;
 
@@ -69,7 +68,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     @Override
     public void onMapReady(GoogleMap googleMap) {
         gMap = googleMap;
-        account = GoogleSignIn.getLastSignedInAccount(getActivity());
         googleMap.setOnMapLongClickListener(this);
         googleMap.setOnInfoWindowClickListener(this);
         googleMap.setInfoWindowAdapter(this);
@@ -138,7 +136,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         } else {
             toast = Toast.makeText(getContext(), getResources().getString(R.string.Joined), Toast.LENGTH_LONG);
         }
-        activity.getDatabase().joinEvent(account.getId(),marker.getTitle());
+        activity.getDatabase().joinEvent(activity.getUserId(),marker.getTitle());
         toast.show();
     }
 
@@ -193,7 +191,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     }
 
     public void showDialog(double latitude, double longitude,String address){
-        DialogFragment newFragment = new EventDialog(latitude,longitude,address);
+        DialogFragment newFragment = new EventDialog(latitude,longitude, activity.getUserId(), activity.getUserName(), address);
         newFragment.show(getFragmentManager(), "eventDialog");
     }
 

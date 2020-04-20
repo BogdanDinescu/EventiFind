@@ -19,15 +19,12 @@ import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
 public class AccountFragment extends Fragment {
     private Button signOutBtn;
     private Button joinedEvBtn;
     private Button myEvBtn;
     private ListView listView;
-    private GoogleSignInAccount account;
     private MainActivity activity;
 
     @Override
@@ -42,7 +39,6 @@ public class AccountFragment extends Fragment {
         joinedEvBtn = view.findViewById(R.id.joined_events);
         myEvBtn = view.findViewById(R.id.my_events);
         listView = view.findViewById(R.id.list_event);
-        account = GoogleSignIn.getLastSignedInAccount(getActivity());
         activity = (MainActivity) getActivity();
 
         // cand este apasat sign out
@@ -65,19 +61,23 @@ public class AccountFragment extends Fragment {
         myEvBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast toast = Toast.makeText(getContext(),"Nu merge inca",Toast.LENGTH_SHORT);
-                toast.show();
+                addHostedEventsToList();
             }
         });
 
         TextView name = view.findViewById(R.id.account_name);
-        name.setText(account.getDisplayName());
+        name.setText(activity.getUserName());
         ImageView picture = view.findViewById(R.id.account_picture);
-        Glide.with(this).load(account.getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(picture);
+        Glide.with(this).load(activity.getUserPhoto()).apply(RequestOptions.circleCropTransform()).into(picture);
     }
 
     private void addJoinedEventsToList() {
-        AdapterList adapter = new AdapterList(activity.getDatabase().joinedEvents, activity, account.getId());
+        AdapterList adapter = new AdapterList(activity.getDatabase().joinedEvents, activity, activity.getUserId());
+        listView.setAdapter(adapter);
+    }
+
+    private void addHostedEventsToList(){
+        AdapterList adapter = new AdapterList(activity.getDatabase().hostedEvents, activity, activity.getUserId());
         listView.setAdapter(adapter);
     }
 

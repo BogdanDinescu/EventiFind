@@ -21,4 +21,6 @@
     <string name="Unjoined">Event unjoined</string>
     <string name="Joined_events">Joined Events</string>
     <string name="My_events">My events</string>
+    <string name="Hosted_by">Hosted by: %1$s</string>
+    <string name="Delete">Delete</string>
 </resources>

@@ -24,24 +24,26 @@ public final class Database {
     private DatabaseReference mDatabase = null;
     public HashMap<String,Event> eventMap;
     public ArrayList<String> joinedEvents;
+    public HashMap<String,Event> hostedEvents;
     private MainActivity activity;
 
     public Database(MainActivity context){
         this.activity = context;
-    };
+    }
 
     private DatabaseReference getDatabaseReference(){
         if(mDatabase == null) {
             mDatabase = FirebaseDatabase.getInstance().getReference();
             eventMap = new HashMap<String, Event>();
             joinedEvents = new ArrayList<String>();
+            hostedEvents = new HashMap<String, Event>();
         }
         return mDatabase;
     }
 
-    public void createEvent(String name, String description, Date data , double latitude, double longitude) {
+    public void createEvent(String name, String description, Date data , double latitude, double longitude, String ownerId, String ownerName) {
         String key = getDatabaseReference().child("events").push().getKey();
-        Event event = new Event(name,description,data,latitude,longitude);
+        Event event = new Event(name,description,data,latitude,longitude,ownerId,ownerName);
         getDatabaseReference().child("events").child(key).setValue(event).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
@@ -126,10 +128,44 @@ public final class Database {
             }
         });
     }
+
+    public void getHostedEvents(String userId){
+        getDatabaseReference().child("events").orderByChild("ownerId").equalTo(userId).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                hostedEvents.clear();
+                for(DataSnapshot eventSnapshot : dataSnapshot.getChildren()){
+                        hostedEvents.put(eventSnapshot.getKey(),eventSnapshot.getValue(Event.class));
+                    }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.e("Canceled",databaseError.toString());
+            }
+        });
+    }
+
+    public void deleteEvent(String eventId){
+
+        getDatabaseReference().child("events").orderByKey().equalTo(eventId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                dataSnapshot.getRef().removeValue();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.e("onCancelled", databaseError.toString());
+            }
+        });
+    }
 }
 
 class Event implements Serializable {
     private String name;
+    private String ownerId;
+    private String ownerName;
     private String description;
     private Date date;
     private double latitude;
@@ -141,8 +177,10 @@ class Event implements Serializable {
     }
 
     // treubie lasat public
-    public Event(String name, String description, Date data, double latitude, double longitude) {
+    public Event(String name, String description, Date data, double latitude, double longitude, String ownerId, String ownerName) {
         this.name = name;
+        this.ownerId = ownerId;
+        this.ownerName = ownerName;
         this.description = description;
         this.date = data;
         this.latitude = latitude;
@@ -198,6 +236,22 @@ class Event implements Serializable {
 
     public void setGeoHash(String geoHash) {
         this.geoHash = geoHash;
+    }
+
+    public String getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(String ownerId) {
+        this.ownerId = ownerId;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
     }
 
     private Location LatLngToLocation(double latitude, double longitude){

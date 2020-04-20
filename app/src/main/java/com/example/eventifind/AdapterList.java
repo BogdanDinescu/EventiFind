@@ -69,6 +69,8 @@ public class AdapterList extends BaseAdapter {
         final Event item = getItem(position);
         // Nume
         ((TextView)listItem.findViewById(R.id.title)).setText(item.getName());
+        // Owner
+        ((TextView)listItem.findViewById(R.id.owner)).setText(activity.getResources().getString(R.string.Hosted_by,item.getOwnerName()));
         // Descriere
         ((TextView)listItem.findViewById(R.id.description)).setText(item.getDescription());
         // Data
@@ -114,6 +116,18 @@ public class AdapterList extends BaseAdapter {
                 activity.getDatabase().joinEvent(userId,getKey(position));
             }
         });
+
+        // Delete event
+        final Button deleteButton = listItem.findViewById(R.id.delete);
+        if(activity.getDatabase().hostedEvents.containsValue(getKey(position)))
+            deleteButton.setVisibility(View.VISIBLE);
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                activity.getDatabase().deleteEvent(getKey(position));
+            }
+        });
+
         return listItem;
     }
 }

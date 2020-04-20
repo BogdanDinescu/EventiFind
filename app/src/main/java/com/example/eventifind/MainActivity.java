@@ -3,7 +3,6 @@ package com.example.eventifind;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
@@ -11,6 +10,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private TabsManager tabsManager;
     private Database database;
     private ProgressBar progressBar;
+    private GoogleSignInAccount account;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
         // initializari
         database = new Database(this);
         tabsManager = new TabsManager(this, getSupportFragmentManager());
+        account = GoogleSignIn.getLastSignedInAccount(this);
 
         // verifica permisiunile
         // daca nu sunt permise se cere permisiunea
@@ -61,8 +63,8 @@ public class MainActivity extends AppCompatActivity {
                 finish();
             }
             // obtine evenimentele la care participa userul cu id-ul respectiv
-            GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
             database.getJoinedEvents(account.getId());
+            database.getHostedEvents(account.getId());
         }
     }
 
@@ -86,6 +88,18 @@ public class MainActivity extends AppCompatActivity {
 
     public Database getDatabase() {
         return database;
+    }
+
+    public String getUserId(){
+        return account.getId();
+    }
+
+    public String getUserName(){
+        return account.getDisplayName();
+    }
+
+    public Uri getUserPhoto(){
+        return account.getPhotoUrl();
     }
 
     private void EnableDialog() {
