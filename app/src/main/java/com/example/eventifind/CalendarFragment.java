@@ -20,8 +20,8 @@ import java.util.Date;
 
 public class CalendarFragment extends Fragment {
 
-    private Button setDateToday, setDate1, setDate2;
-    private static CalendarView calendarView;
+    private Button  setDate1, setDate2;
+    private CalendarView calendarView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
@@ -59,7 +59,7 @@ public class CalendarFragment extends Fragment {
     }
 
     // cand date e string de forma dd/MM/yyyy
-    public static void focusOnDate(String date) {
+    public void focusOnDate(String date) {
         String parts[] = date.split("/");
 
         int day = Integer.parseInt(parts[0]);
@@ -77,7 +77,7 @@ public class CalendarFragment extends Fragment {
     }
 
     // cand date de obiect de tip Java.util.date
-    public static void focusOnDate(Date date) {
+    public void focusOnDate(Date date) {
         calendarView.setDate(date.getTime());
     }
 

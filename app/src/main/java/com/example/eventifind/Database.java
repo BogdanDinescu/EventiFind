@@ -7,6 +7,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.fonfon.geohash.GeoHash;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -20,23 +21,30 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-public class Database {
-    private static DatabaseReference mDatabase = null;
-    public static HashMap<String,Event> eventMap;
-    public static ArrayList<String> joinedEvents;
-    private Database(){};
-    private static DatabaseReference getDatabaseReference(){
+public final class Database {
+    private DatabaseReference mDatabase = null;
+    public HashMap<String,Event> eventMap;
+    public ArrayList<String> joinedEvents;
+    public HashMap<String,Event> hostedEvents;
+    private MainActivity activity;
+
+    public Database(MainActivity context){
+        this.activity = context;
+    }
+
+    private DatabaseReference getDatabaseReference(){
         if(mDatabase == null) {
             mDatabase = FirebaseDatabase.getInstance().getReference();
             eventMap = new HashMap<String, Event>();
             joinedEvents = new ArrayList<String>();
+            hostedEvents = new HashMap<String, Event>();
         }
         return mDatabase;
     }
 
-    public static void createEvent(String name, String description, Date data , double latitude, double longitude) {
+    public void createEvent(String name, String description, Date data , double latitude, double longitude, String ownerId, String ownerName) {
         String key = getDatabaseReference().child("events").push().getKey();
-        Event event = new Event(name,description,data,latitude,longitude);
+        Event event = new Event(name,description,data,latitude,longitude,ownerId,ownerName);
         getDatabaseReference().child("events").child(key).setValue(event).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
@@ -45,7 +53,7 @@ public class Database {
         });
     }
 
-    public static void queryClosestEvents(Location location, Integer numberOfEvents){
+    public void queryClosestEvents(Location location, Integer numberOfEvents){
         // obtine hash-ul pentru locatia data
         final GeoHash hash = GeoHash.fromLocation(location,4);
         // obtine regiunile din imprejur
@@ -67,8 +75,10 @@ public class Database {
                         eventMap.put(eventSnapshot.getKey(),eventSnapshot.getValue(Event.class));
                     }
                 }
-                MapFragment.addMarkers();
-                MapFragment.colorMarkers();
+                activity.getTabsManager().getMapFragment().addMarkers();
+                activity.getTabsManager().getFeedFragment().loadFeed();
+                activity.getTabsManager().getMapFragment().colorMarkers();
+                activity.hideProgressBar();
             }
             // daca citirea a esuat
             @Override
@@ -80,7 +90,7 @@ public class Database {
         getDatabaseReference().child("events").limitToFirst(numberOfEvents).addValueEventListener(eventListener);
     }
 
-    public static void getJoinedEvents(String id){
+    public void getJoinedEvents(String id){
         getDatabaseReference().child("user-data").child(id).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -89,7 +99,7 @@ public class Database {
                         joinedEvents.clear();
                         joinedEvents.addAll(joinedEventsMap.values());
                     }
-                    MapFragment.colorMarkers();
+                    activity.getTabsManager().getMapFragment().colorMarkers();
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -98,7 +108,8 @@ public class Database {
         });
     }
 
-    public static void JoinEvent(final String userId, final String eventId){
+    // Il adauga la joined (return true) daca nu e deja, altfel il sterge (return false)
+    public void joinEvent(final String userId, final String eventId){
         getDatabaseReference().child("user-data").child(userId).orderByValue().equalTo(eventId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -118,10 +129,48 @@ public class Database {
             }
         });
     }
+
+    public void getHostedEvents(String userId){
+        getDatabaseReference().child("events").orderByChild("ownerId").equalTo(userId).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                hostedEvents.clear();
+                for(DataSnapshot eventSnapshot : dataSnapshot.getChildren()){
+                        hostedEvents.put(eventSnapshot.getKey(),eventSnapshot.getValue(Event.class));
+                    }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.e("Canceled",databaseError.toString());
+            }
+        });
+    }
+
+    public void deleteEvent(final String eventId){
+        getDatabaseReference().child("events").child(eventId).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                dataSnapshot.getRef().removeValue();
+                eventMap.remove(eventId);
+                joinedEvents.remove(eventId);
+                hostedEvents.remove(eventId);
+                activity.getTabsManager().getMapFragment().deleteMarker(eventId);
+                activity.getTabsManager().getFeedFragment().loadFeed();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.e("onCancelled", databaseError.toString());
+            }
+        });
+    }
 }
 
 class Event implements Serializable {
     private String name;
+    private String ownerId;
+    private String ownerName;
     private String description;
     private Date date;
     private double latitude;
@@ -133,8 +182,10 @@ class Event implements Serializable {
     }
 
     // treubie lasat public
-    public Event(String name, String description, Date data, double latitude, double longitude) {
+    public Event(String name, String description, Date data, double latitude, double longitude, String ownerId, String ownerName) {
         this.name = name;
+        this.ownerId = ownerId;
+        this.ownerName = ownerName;
         this.description = description;
         this.date = data;
         this.latitude = latitude;
@@ -190,6 +241,22 @@ class Event implements Serializable {
 
     public void setGeoHash(String geoHash) {
         this.geoHash = geoHash;
+    }
+
+    public String getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(String ownerId) {
+        this.ownerId = ownerId;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
     }
 
     private Location LatLngToLocation(double latitude, double longitude){

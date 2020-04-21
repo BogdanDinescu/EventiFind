@@ -57,14 +57,15 @@ public class LoginActivity extends AppCompatActivity {
         super.onStart();
         // la start daca contul nu e null, inseamna ca a fost logat deja si intra direct in MainActivity
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-        FirebaseUser currentUser = mAuth.getCurrentUser();
+        //FirebaseUser currentUser = mAuth.getCurrentUser();
         if(account != null)
             gotoMain(account);
     }
 
     private void gotoMain(GoogleSignInAccount account) {
         Intent intent = new Intent(this, MainActivity.class);
-        intent.putExtra("account", account);
+        //intent.putExtra("account", account);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
 

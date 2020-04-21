@@ -52,11 +52,17 @@ class TabsManager {
         viewPagerAdapter.addFragment(accountFragment,this.activity.getResources().getString(R.string.Account));
         // le randez
         viewPager.setAdapter(viewPagerAdapter);
+        // mentine paginile incarcate
+        viewPager.setOffscreenPageLimit(3);
         // pun iconitele
         tabLayout.getTabAt(0).setIcon(R.drawable.ic_feed);
         tabLayout.getTabAt(1).setIcon(R.drawable.ic_pin);
         tabLayout.getTabAt(2).setIcon(R.drawable.ic_calendar);
         tabLayout.getTabAt(3).setIcon(R.drawable.ic_account);
+    }
+
+    public void setCurrentTab(int index){
+        viewPager.setCurrentItem(index,true);
     }
 
     public FeedFragment getFeedFragment() {

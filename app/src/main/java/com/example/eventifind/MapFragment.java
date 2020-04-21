@@ -7,6 +7,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +32,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,8 +45,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     private static GoogleMap gMap;
     private MapView mapView;
-    private static List<Marker> markers;
-    private GoogleSignInAccount account;
+    private List<Marker> markers;
+    private Location currentLocation = null;
+    private MainActivity activity;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -58,36 +61,27 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         mapView.onCreate(savedInstanceState);
         mapView.onResume();
         mapView.getMapAsync(this);
+        activity = (MainActivity) getActivity();
     }
 
-    @Override
     // atunci cand harta a fost creata se pot efectua actiuni
+    @Override
     public void onMapReady(GoogleMap googleMap) {
         gMap = googleMap;
-        account = GoogleSignIn.getLastSignedInAccount(getActivity());
         googleMap.setOnMapLongClickListener(this);
         googleMap.setOnInfoWindowClickListener(this);
         googleMap.setInfoWindowAdapter(this);
+        googleMap.setMyLocationEnabled(true);
 
-        // obtine locatia curenta
-        Location location = getCurrentLocation(getContext());
-
-        // se centreaza camera pe locatia curenta
-        if (location != null) {
-            gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
-            CameraPosition cameraPosition = new CameraPosition.Builder()
-                    .target(new LatLng(location.getLatitude(), location.getLongitude()))
-                    .zoom(15)
-                    .build();
-            gMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        // centreaza pe locatia curenta
+        if(currentLocation != null) {
+            centreOnPoint(currentLocation.getLatitude(), currentLocation.getLongitude());
         }
-        markers = new ArrayList<Marker>();
-        addMarkers();
-        colorMarkers();
     }
 
-    public static void addMarkers(){
-        for(Map.Entry<String,Event> e: Database.eventMap.entrySet()) {
+    public void addMarkers(){
+        markers = new ArrayList<Marker>();
+        for(Map.Entry<String,Event> e: activity.getDatabase().eventMap.entrySet()) {
             LatLng point = new LatLng(e.getValue().getLatitude(), e.getValue().getLongitude());
             MarkerOptions markerOptions = new MarkerOptions().
                     position(point)
@@ -95,11 +89,22 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             markers.add(gMap.addMarker(markerOptions));
         }
     }
+    // titlul markerului reprezinta in implementarea asta id-ul eventului
+    public void deleteMarker(String title){
+        for(Marker marker: markers) {
+            if (marker.getTitle().equals(title)) {
+                marker.remove();
+                Log.e("removed","removed");
+                return;
+            }
+        }
+    }
 
-    public static void colorMarkers(){
+    public void colorMarkers(){
+        if (markers == null) return;
         for (Marker m: markers){
-            if(Database.joinedEvents.contains(m.getTitle())){
-                m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
+            if(activity.getDatabase().joinedEvents.contains(m.getTitle())){
+                m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
             }else {
                 m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
             }
@@ -114,11 +119,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     @Override
     public View getInfoContents(Marker marker) {
         String key = marker.getTitle();
-        Event event = Database.eventMap.get(key);
+        Event event = activity.getDatabase().eventMap.get(key);
 
         View markerView = getLayoutInflater().inflate(R.layout.custom_marker_window, null);
         TextView join = markerView.findViewById(R.id.join);
-        if(Database.joinedEvents.contains(marker.getTitle())){
+        if(activity.getDatabase().joinedEvents.contains(marker.getTitle())){
             join.setText(getResources().getString(R.string.Unjoin));
         }else {
             join.setText(getResources().getString(R.string.Join));
@@ -135,22 +140,22 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     // la click pe "mini-fereastra" care apare cand dai click pe un marker (join/unjoin)
     @Override
     public void onInfoWindowClick(Marker marker) {
-        marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
+        //marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
         marker.hideInfoWindow();
-        Database.JoinEvent(account.getId(),marker.getTitle());
         Toast toast;
-        if(Database.joinedEvents.contains(marker.getTitle())) {
-             toast = Toast.makeText(getContext(), getResources().getString(R.string.Unjoined), Toast.LENGTH_LONG);
+        if(activity.getDatabase().joinedEvents.contains(marker.getTitle())) {
+            toast = Toast.makeText(getContext(), getResources().getString(R.string.Unjoined), Toast.LENGTH_LONG);
         } else {
             toast = Toast.makeText(getContext(), getResources().getString(R.string.Joined), Toast.LENGTH_LONG);
         }
+        activity.getDatabase().joinEvent(activity.getUserId(),marker.getTitle());
         toast.show();
     }
 
     // la click prelung pe map
     @Override
     public void onMapLongClick(LatLng point) {
-        showDialog(point.latitude,point.longitude,getAddressLocation(point));
+        showDialog(point);
     }
 
     // aceasta functie primeste Latitudine si Longitudine si returneaza stringul cu adresa
@@ -168,22 +173,42 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         return getActivity().getResources().getString(R.string.Unnamed_location);
     }
 
-    public Location getCurrentLocation(Context context) {
+    public Location getCurrentLocation(Context context) throws ConnectException{
+
         LocationManager service = (LocationManager) context.getSystemService(LOCATION_SERVICE);
+
+        // daca GPS sau Conexiune nu sunt pornite arunca exceptie
+        if(!service.isProviderEnabled(LocationManager.GPS_PROVIDER) &&
+        !service.isProviderEnabled(LocationManager.NETWORK_PROVIDER) ) {
+            throw new ConnectException("GPS or Connection unavailable");
+        }
+
         Criteria criteria = new Criteria();
         String provider = service.getBestProvider(criteria, false);
-        Location location = null;
         try {
-            location = service.getLastKnownLocation(provider);
+            currentLocation = service.getLastKnownLocation(provider);
         } catch (SecurityException e){
             e.printStackTrace();
         }
-        return location;
+        return currentLocation;
     }
 
-    public void showDialog(double latitude, double longitude,String address){
-        DialogFragment newFragment = new EventDialog(latitude,longitude,address);
-        newFragment.show(getFragmentManager(), "even2tDialog");
+    public void centreOnPoint(double latitude, double longitude){
+        LatLng latLng = new LatLng(latitude,longitude);
+        CameraPosition cameraPosition = new CameraPosition.Builder()
+                .target(latLng)
+                .zoom(15)
+                .build();
+        gMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+    }
+
+    public void showDialog(LatLng point){
+        DialogFragment newFragment = new EventDialog(point.latitude,
+                point.longitude,
+                activity.getUserId(),
+                activity.getUserName(),
+                getAddressLocation(point));
+        newFragment.show(getFragmentManager(), "eventDialog");
     }
 
 }
