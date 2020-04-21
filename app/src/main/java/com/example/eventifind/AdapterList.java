@@ -1,11 +1,14 @@
 package com.example.eventifind;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.google.android.gms.maps.model.LatLng;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -67,6 +70,12 @@ public class AdapterList extends BaseAdapter {
         }
 
         final Event item = getItem(position);
+        // caz particular evenimentul a fost sters anterior, el inca figureaza ca joined.
+        if (item == null) {
+            ((TextView)listItem.findViewById(R.id.title)).setText(activity.getResources().getString(R.string.Event_deleted));
+            ((Button)listItem.findViewById(R.id.join)).setVisibility(View.GONE);
+            return listItem;
+        }
         // Nume
         ((TextView)listItem.findViewById(R.id.title)).setText(item.getName());
         // Owner
@@ -119,8 +128,10 @@ public class AdapterList extends BaseAdapter {
 
         // Delete event
         final Button deleteButton = listItem.findViewById(R.id.delete);
-        if(activity.getDatabase().hostedEvents.containsValue(getKey(position)))
+        if(activity.getDatabase().hostedEvents.containsKey(getKey(position)))
             deleteButton.setVisibility(View.VISIBLE);
+        else
+            deleteButton.setVisibility(View.GONE);
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -23,4 +23,5 @@
     <string name="My_events">My events</string>
     <string name="Hosted_by">Hosted by: %1$s</string>
     <string name="Delete">Delete</string>
+    <string name="Event_deleted">Event Deleted</string>
 </resources>

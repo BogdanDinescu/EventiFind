@@ -7,6 +7,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,7 +62,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         mapView.onResume();
         mapView.getMapAsync(this);
         activity = (MainActivity) getActivity();
-        markers = new ArrayList<Marker>();
     }
 
     // atunci cand harta a fost creata se pot efectua actiuni
@@ -80,6 +80,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     }
 
     public void addMarkers(){
+        markers = new ArrayList<Marker>();
         for(Map.Entry<String,Event> e: activity.getDatabase().eventMap.entrySet()) {
             LatLng point = new LatLng(e.getValue().getLatitude(), e.getValue().getLongitude());
             MarkerOptions markerOptions = new MarkerOptions().
@@ -88,8 +89,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             markers.add(gMap.addMarker(markerOptions));
         }
     }
+    // titlul markerului reprezinta in implementarea asta id-ul eventului
+    public void deleteMarker(String title){
+        for(Marker marker: markers) {
+            if (marker.getTitle().equals(title)) {
+                marker.remove();
+                Log.e("removed","removed");
+                return;
+            }
+        }
+    }
 
     public void colorMarkers(){
+        if (markers == null) return;
         for (Marker m: markers){
             if(activity.getDatabase().joinedEvents.contains(m.getTitle())){
                 m.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
@@ -143,7 +155,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     // la click prelung pe map
     @Override
     public void onMapLongClick(LatLng point) {
-        showDialog(point.latitude,point.longitude,getAddressLocation(point));
+        showDialog(point);
     }
 
     // aceasta functie primeste Latitudine si Longitudine si returneaza stringul cu adresa
@@ -190,8 +202,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         gMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 
-    public void showDialog(double latitude, double longitude,String address){
-        DialogFragment newFragment = new EventDialog(latitude,longitude, activity.getUserId(), activity.getUserName(), address);
+    public void showDialog(LatLng point){
+        DialogFragment newFragment = new EventDialog(point.latitude,
+                point.longitude,
+                activity.getUserId(),
+                activity.getUserName(),
+                getAddressLocation(point));
         newFragment.show(getFragmentManager(), "eventDialog");
     }
 

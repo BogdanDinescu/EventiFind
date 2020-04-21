@@ -7,6 +7,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.fonfon.geohash.GeoHash;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -75,8 +76,8 @@ public final class Database {
                     }
                 }
                 activity.getTabsManager().getMapFragment().addMarkers();
-                activity.getTabsManager().getMapFragment().colorMarkers();
                 activity.getTabsManager().getFeedFragment().loadFeed();
+                activity.getTabsManager().getMapFragment().colorMarkers();
                 activity.hideProgressBar();
             }
             // daca citirea a esuat
@@ -146,12 +147,16 @@ public final class Database {
         });
     }
 
-    public void deleteEvent(String eventId){
-
-        getDatabaseReference().child("events").orderByKey().equalTo(eventId).addListenerForSingleValueEvent(new ValueEventListener() {
+    public void deleteEvent(final String eventId){
+        getDatabaseReference().child("events").child(eventId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 dataSnapshot.getRef().removeValue();
+                eventMap.remove(eventId);
+                joinedEvents.remove(eventId);
+                hostedEvents.remove(eventId);
+                activity.getTabsManager().getMapFragment().deleteMarker(eventId);
+                activity.getTabsManager().getFeedFragment().loadFeed();
             }
 
             @Override
