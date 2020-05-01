@@ -155,7 +155,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     // la click prelung pe map
     @Override
     public void onMapLongClick(LatLng point) {
-        showDialog(point);
+        if(activity.getDatabase().admin)
+            showDialog(point);
     }
 
     // aceasta functie primeste Latitudine si Longitudine si returneaza stringul cu adresa

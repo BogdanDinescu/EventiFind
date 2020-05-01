@@ -1,10 +1,5 @@
 package com.example.eventifind;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
 import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,8 +10,13 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ProgressBar;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.net.ConnectException;
 
@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private TabsManager tabsManager;
     private Database database;
     private ProgressBar progressBar;
-    private GoogleSignInAccount account;
+    private FirebaseUser user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
         // initializari
         database = new Database(this);
         tabsManager = new TabsManager(this, getSupportFragmentManager());
-        account = GoogleSignIn.getLastSignedInAccount(this);
+        user = FirebaseAuth.getInstance().getCurrentUser();
 
         // verifica permisiunile
         // daca nu sunt permise se cere permisiunea
@@ -63,8 +63,9 @@ public class MainActivity extends AppCompatActivity {
                 finish();
             }
             // obtine evenimentele la care participa userul cu id-ul respectiv
-            database.getJoinedEvents(account.getId());
-            database.getHostedEvents(account.getId());
+            database.getJoinedEvents(user.getUid());
+            database.getHostedEvents(user.getUid());
+            database.checkAdmin(user.getUid());
         }
     }
 
@@ -91,15 +92,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public String getUserId(){
-        return account.getId();
+        return user.getUid();
     }
 
     public String getUserName(){
-        return account.getDisplayName();
+        return user.getDisplayName();
     }
 
     public Uri getUserPhoto(){
-        return account.getPhotoUrl();
+        return user.getPhotoUrl();
     }
 
     private void EnableDialog() {

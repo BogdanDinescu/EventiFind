@@ -2,6 +2,7 @@ package com.example.eventifind;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +20,8 @@ import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+
+import java.net.ConnectException;
 
 public class AccountFragment extends Fragment {
     private Button signOutBtn;
@@ -79,6 +82,10 @@ public class AccountFragment extends Fragment {
     private void addHostedEventsToList(){
         AdapterList adapter = new AdapterList(activity.getDatabase().hostedEvents, activity, activity.getUserId());
         listView.setAdapter(adapter);
+    }
+
+    public void setAdminView() {
+        this.getView().findViewById(R.id.my_events).setEnabled(true);
     }
 
     private void logout(){
