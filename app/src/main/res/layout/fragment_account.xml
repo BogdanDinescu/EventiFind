@@ -71,13 +71,10 @@
         app:layout_constraintEnd_toEndOf="parent"
         />
 
-    <ListView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list_event"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="20dp"
-        android:elevation="20dp"
         android:scrollbars="none"
         app:layout_constraintTop_toBottomOf="@id/joined_events"
         app:layout_constraintBottom_toBottomOf="parent"

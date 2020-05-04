@@ -2,32 +2,29 @@ package com.example.eventifind;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-
-import java.net.ConnectException;
 
 public class AccountFragment extends Fragment {
     private Button signOutBtn;
     private Button joinedEvBtn;
     private Button myEvBtn;
-    private ListView listView;
+    private RecyclerView recyclerView;
     private MainActivity activity;
 
     @Override
@@ -41,7 +38,9 @@ public class AccountFragment extends Fragment {
         signOutBtn = view.findViewById(R.id.log_out_button);
         joinedEvBtn = view.findViewById(R.id.joined_events);
         myEvBtn = view.findViewById(R.id.my_events);
-        listView = view.findViewById(R.id.list_event);
+        recyclerView = view.findViewById(R.id.list_event);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(activity);
+        recyclerView.setLayoutManager(layoutManager);
         activity = (MainActivity) getActivity();
 
         // cand este apasat sign out
@@ -75,13 +74,13 @@ public class AccountFragment extends Fragment {
     }
 
     private void addJoinedEventsToList() {
-        AdapterList adapter = new AdapterList(activity.getDatabase().joinedEvents, activity, activity.getUserId());
-        listView.setAdapter(adapter);
+        RecyclerAdapter adapter = new RecyclerAdapter(activity.getDatabase().joinedEvents, activity.getUserId(), activity.getDatabase().eventMap);
+        recyclerView.setAdapter(adapter);
     }
 
     private void addHostedEventsToList(){
-        AdapterList adapter = new AdapterList(activity.getDatabase().hostedEvents, activity, activity.getUserId());
-        listView.setAdapter(adapter);
+        RecyclerAdapter adapter = new RecyclerAdapter(activity.getDatabase().hostedEvents, activity.getUserId());
+        recyclerView.setAdapter(adapter);
     }
 
     public void setAdminView() {
