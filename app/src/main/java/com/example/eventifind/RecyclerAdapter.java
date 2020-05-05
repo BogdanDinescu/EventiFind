@@ -4,14 +4,19 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.RotateAnimation;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.gms.maps.model.LatLng;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -35,6 +40,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
         TextView description;
         Button join;
         Button delete;
+        ImageButton expand;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -46,6 +52,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
             description = (TextView)itemView.findViewById(R.id.description);
             join = (Button)itemView.findViewById(R.id.join);
             delete = (Button)itemView.findViewById(R.id.delete);
+            expand = (ImageButton)itemView.findViewById(R.id.expand);
         }
     }
 
@@ -102,7 +109,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
             }
         });
         // Locatie
-        holder.location.setText("View on map");
+        holder.location.setText(activity.getTabsManager().getMapFragment().getCityLocation(new LatLng(item.getLatitude(), item.getLongitude())));
         holder.location.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -113,20 +120,20 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
 
         // Join/unjoin Button
         if(activity.getDatabase().joinedEvents.contains(getKey(position))) {
-            holder.join.setBackgroundColor(activity.getResources().getColor(R.color.colorAccent));
+            holder.join.setTextColor(activity.getResources().getColor(R.color.colorAccent));
             holder.join.setText(activity.getResources().getString(R.string.Unjoin));
         } else {
-            holder.join.setBackgroundColor(activity.getResources().getColor(R.color.colorPrimary));
+            holder.join.setTextColor(activity.getResources().getColor(R.color.colorPrimary));
             holder.join.setText(activity.getResources().getString(R.string.Join));
         }
         holder.join.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(holder.join.getText() == activity.getResources().getString(R.string.Join)) {
-                    holder.join.setBackgroundColor(activity.getResources().getColor(R.color.colorAccent));
+                    holder.join.setTextColor(activity.getResources().getColor(R.color.colorAccent));
                     holder.join.setText(activity.getResources().getString(R.string.Unjoin));
                 } else {
-                    holder.join.setBackgroundColor(activity.getResources().getColor(R.color.colorPrimary));
+                    holder.join.setTextColor(activity.getResources().getColor(R.color.colorPrimary));
                     holder.join.setText(activity.getResources().getString(R.string.Join));
                 }
                 activity.getDatabase().joinEvent(userId,getKey(position));
@@ -142,6 +149,20 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
             @Override
             public void onClick(View v) {
                 activity.getDatabase().deleteEvent(getKey(position));
+            }
+        });
+
+        // Expand button
+        holder.expand.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(holder.description.getVisibility() == View.GONE) {
+                    holder.description.setVisibility(View.VISIBLE);
+                } else {
+                    holder.description.setVisibility(View.GONE);
+                }
+
+                v.animate().rotationBy(180).setDuration(500).start();
             }
         });
 

@@ -159,6 +159,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             showDialog(point);
     }
 
+
     // aceasta functie primeste Latitudine si Longitudine si returneaza stringul cu adresa
     private String getAddressLocation(LatLng point) {
         Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
@@ -172,6 +173,21 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             return e.getMessage();
         }
         return getActivity().getResources().getString(R.string.Unnamed_location);
+    }
+
+    public String getCityLocation(LatLng point) {
+        Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
+        try {
+            List<Address> listAddresses = geocoder.getFromLocation(point.latitude, point.longitude, 1);
+            if (null != listAddresses && listAddresses.size() > 0) {
+                return listAddresses.get(0).getLocality();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return e.getMessage();
+        }
+        return getActivity().getResources().getString(R.string.Unnamed_location);
+
     }
 
     public Location getCurrentLocation(Context context) throws ConnectException{
