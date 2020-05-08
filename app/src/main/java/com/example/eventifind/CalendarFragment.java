@@ -6,22 +6,32 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CalendarView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 
+import com.google.firebase.database.annotations.Nullable;
+
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
+import javax.annotation.Nonnull;
 
 public class CalendarFragment extends Fragment {
 
-    private Button  setDate1, setDate2;
     private CalendarView calendarView;
+    private MainActivity activity;
+    private ListView listView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
@@ -31,10 +41,10 @@ public class CalendarFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+/*
         setDate1 = view.findViewById(R.id.button2);
         setDate2 = view.findViewById(R.id.button3);
-        calendarView = view.findViewById(R.id.calendarView);
+
 
         setDate1.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -53,6 +63,72 @@ public class CalendarFragment extends Fragment {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
+            }
+        });
+ */
+        calendarView = view.findViewById(R.id.calendarView);
+        final LinearLayout ll = (LinearLayout) view.findViewById(R.id.linearLayoutVertical);
+        activity = (MainActivity) getActivity();
+
+//        ArrayList<ElementCalendar> elementCalendar = new ArrayList<>();
+//        ArrayList<String> joinedEvents = activity.getDatabase().joinedEvents;
+
+        listView = view.findViewById(R.id.list_view1);
+
+        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
+            TextView textView = activity.findViewById(R.id.textView);
+            @Override
+            public void onSelectedDayChange(CalendarView view, int year, int month,
+                                            int dayOfMonth) {
+                boolean isAtLeastOneEvent = false;
+                month++;
+
+                HashMap<String, Event> aux = new HashMap<>();
+
+                for(Map.Entry<String,Event> e : activity.getDatabase().eventMap.entrySet()) {
+
+                    aux.put(e.getKey(), e.getValue());
+
+                    String dateClickedString = dayOfMonth + "/" + month + "/" + year;
+                    Date dateClicked = null;
+                    try {
+                         dateClicked = new SimpleDateFormat("dd/MM/yyyy").parse(dateClickedString);
+                    } catch (ParseException ex) {
+                        ex.printStackTrace();
+                    }
+                    DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+
+                    Date dateClickedWithNoTime = null;
+
+                    try {
+                        dateClickedWithNoTime = formatter.parse(formatter.format(dateClicked));
+                    } catch (ParseException ex) {
+                        ex.printStackTrace();
+                    }
+
+                    Date dateInDBWithNoTime = null;
+
+                    try {
+                         dateInDBWithNoTime = formatter.parse(formatter.format(e.getValue().getDate()));
+                    } catch (ParseException ex) {
+                        ex.printStackTrace();
+                    }
+
+                    if(dateInDBWithNoTime.toString().equals(dateClickedWithNoTime.toString()) && activity.getDatabase().joinedEvents.contains(e.getKey())) {
+                        textView.setText("");
+                        listView.setAdapter(null);
+                        AdapterList adapter = new AdapterList(aux, activity, activity.getUserId());
+                        listView.setAdapter(adapter);
+
+                        isAtLeastOneEvent = true;
+                    }
+                }
+
+                if(isAtLeastOneEvent == false) {
+                    listView.setAdapter(null);
+                    textView.setText("Niciun eveniment in aceasta zi!");
+                }
+
             }
         });
 
@@ -76,7 +152,7 @@ public class CalendarFragment extends Fragment {
         calendarView.setDate(milliTime);
     }
 
-    // cand date de obiect de tip Java.util.date
+    // cand date e obiect de tip Java.util.date
     public void focusOnDate(Date date) {
         calendarView.setDate(date.getTime());
     }
