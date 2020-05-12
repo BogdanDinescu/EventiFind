@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
@@ -51,21 +52,12 @@ public class MainActivity extends AppCompatActivity {
         }else{
             tabsManager.CreateTabs();
             try {
-                // obtine lista cu event-urile din imprejur si tot aceasta functie apeleaza addMarkers
                 Location location = tabsManager.getMapFragment().getCurrentLocation(this);
-                if (location == null) {
-                    throw new NullPointerException();
-                }
-                database.queryClosestEvents(location,10);
+                if (location != null)
+                    database.queryClosestEvents(location,10);
             } catch (ConnectException e) {
                 EnableDialog();
-            } catch (NullPointerException e) {
-                finish();
             }
-            // obtine evenimentele la care participa userul cu id-ul respectiv
-            database.getJoinedEvents(user.getUid());
-            database.getHostedEvents(user.getUid());
-            database.checkAdmin(user.getUid());
         }
     }
 

@@ -5,6 +5,7 @@ import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,8 +20,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -41,12 +40,13 @@ import java.util.Map;
 
 import static android.content.Context.LOCATION_SERVICE;
 
-public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.InfoWindowAdapter, GoogleMap.OnInfoWindowClickListener {
+public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.InfoWindowAdapter, GoogleMap.OnInfoWindowClickListener, LocationListener{
 
     private static GoogleMap gMap;
     private MapView mapView;
     private List<Marker> markers;
     private Location currentLocation = null;
+    LocationManager service;
     private MainActivity activity;
 
     @Override
@@ -192,7 +192,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     public Location getCurrentLocation(Context context) throws ConnectException{
 
-        LocationManager service = (LocationManager) context.getSystemService(LOCATION_SERVICE);
+        service = (LocationManager) context.getSystemService(LOCATION_SERVICE);
 
         // daca GPS sau Conexiune nu sunt pornite arunca exceptie
         if(!service.isProviderEnabled(LocationManager.GPS_PROVIDER) &&
@@ -201,11 +201,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         }
 
         Criteria criteria = new Criteria();
-        String provider = service.getBestProvider(criteria, false);
+        String provider = service.getBestProvider(criteria, true);
+
         try {
             currentLocation = service.getLastKnownLocation(provider);
-        } catch (SecurityException e){
+            if(currentLocation == null) throw new Exception("Not any last location");
+        } catch (SecurityException e) {
             e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+            service.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,0,0,this);
         }
         return currentLocation;
     }
@@ -228,4 +233,25 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         newFragment.show(getFragmentManager(), "eventDialog");
     }
 
+    @Override
+    public void onLocationChanged(Location location) {
+        currentLocation = location;
+        activity.getDatabase().queryClosestEvents(location,10);
+        service.removeUpdates(this);
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
 }

@@ -30,17 +30,11 @@ public class FeedFragment extends Fragment {
         recyclerView.setLayoutManager(layoutManager);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        loadFeed();
-    }
 
     public void loadFeed(){
         super.onResume();
         RecyclerAdapter adapter = new RecyclerAdapter(activity.getDatabase().eventMap, activity.getUserId());
         recyclerView.setAdapter(adapter);
-        //listView.setOnItemClickListener(adapter);
     }
 
 }
