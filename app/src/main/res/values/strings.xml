@@ -24,4 +24,6 @@
     <string name="Hosted_by">Hosted by: %1$s</string>
     <string name="Delete">Delete</string>
     <string name="Event_deleted">Event Deleted</string>
+    <string name="Location_unavailable">Location unavailable. Tap to retry</string>
+    <string name="Internet_unavailable">Internet connection unavailable. Tap to retry</string>
 </resources>

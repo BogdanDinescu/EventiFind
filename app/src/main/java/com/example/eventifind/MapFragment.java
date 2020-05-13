@@ -38,15 +38,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import static android.content.Context.LOCATION_SERVICE;
-
-public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.InfoWindowAdapter, GoogleMap.OnInfoWindowClickListener, LocationListener{
+public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.InfoWindowAdapter, GoogleMap.OnInfoWindowClickListener{
 
     private static GoogleMap gMap;
     private MapView mapView;
     private List<Marker> markers;
-    private Location currentLocation = null;
-    LocationManager service;
     private MainActivity activity;
 
     @Override
@@ -73,10 +69,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         googleMap.setInfoWindowAdapter(this);
         googleMap.setMyLocationEnabled(true);
 
-        // centreaza pe locatia curenta
-        if(currentLocation != null) {
-            centreOnPoint(currentLocation.getLatitude(), currentLocation.getLongitude());
-        }
+        Location location = activity.getLocationService().getCurrentLocation();
+        if (location != null)
+            this.centreOnPoint(location.getLatitude(),location.getLongitude());
     }
 
     public void addMarkers(){
@@ -159,7 +154,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             showDialog(point);
     }
 
-
     // aceasta functie primeste Latitudine si Longitudine si returneaza stringul cu adresa
     private String getAddressLocation(LatLng point) {
         Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
@@ -190,31 +184,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     }
 
-    public Location getCurrentLocation(Context context) throws ConnectException{
-
-        service = (LocationManager) context.getSystemService(LOCATION_SERVICE);
-
-        // daca GPS sau Conexiune nu sunt pornite arunca exceptie
-        if(!service.isProviderEnabled(LocationManager.GPS_PROVIDER) &&
-        !service.isProviderEnabled(LocationManager.NETWORK_PROVIDER) ) {
-            throw new ConnectException("GPS or Connection unavailable");
-        }
-
-        Criteria criteria = new Criteria();
-        String provider = service.getBestProvider(criteria, true);
-
-        try {
-            currentLocation = service.getLastKnownLocation(provider);
-            if(currentLocation == null) throw new Exception("Not any last location");
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-            service.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,0,0,this);
-        }
-        return currentLocation;
-    }
-
     public void centreOnPoint(double latitude, double longitude){
         LatLng latLng = new LatLng(latitude,longitude);
         CameraPosition cameraPosition = new CameraPosition.Builder()
@@ -233,25 +202,4 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         newFragment.show(getFragmentManager(), "eventDialog");
     }
 
-    @Override
-    public void onLocationChanged(Location location) {
-        currentLocation = location;
-        activity.getDatabase().queryClosestEvents(location,10);
-        service.removeUpdates(this);
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
-    }
 }
