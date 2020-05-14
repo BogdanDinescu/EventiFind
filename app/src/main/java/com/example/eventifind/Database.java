@@ -117,6 +117,7 @@ public final class Database {
                         joinedEvents.addAll(joinedEventsMap.values());
                     }
                     activity.getTabsManager().getMapFragment().colorMarkers();
+                    activity.getTabsManager().getFeedFragment().loadFeed();
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
