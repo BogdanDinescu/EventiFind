@@ -22,6 +22,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -47,7 +48,7 @@ public class LoginActivity extends AppCompatActivity {
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                singIn();
+                singInWithGoogle();
             }
         });
     }
@@ -56,20 +57,20 @@ public class LoginActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         // la start daca contul nu e null, inseamna ca a fost logat deja si intra direct in MainActivity
-        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-        //FirebaseUser currentUser = mAuth.getCurrentUser();
-        if(account != null)
-            gotoMain(account);
+        //GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if(currentUser != null)
+            gotoMain();
     }
 
-    private void gotoMain(GoogleSignInAccount account) {
+    private void gotoMain() {
         Intent intent = new Intent(this, MainActivity.class);
         //intent.putExtra("account", account);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
 
-    private void singIn() {
+    private void singInWithGoogle() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
@@ -102,7 +103,8 @@ public class LoginActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // Sign in success
                             FirebaseUser user = mAuth.getCurrentUser();
-                            gotoMain(account);
+                            FirebaseDatabase.getInstance().getReference().child("users").child(user.getUid()).child("admin").setValue(false);
+                            gotoMain();
                         } else {
                             // If sign in fails
                             Log.e("err", "signInWithCredential:failure", task.getException());

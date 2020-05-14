@@ -4,4 +4,5 @@
     <color name="colorPrimaryDark">#009faf</color>
     <color name="colorPrimaryLight">#88ffff</color>
     <color name="colorAccent">#FF5722</color>
+    <color name="backgroundCard">#FEFEFE</color>
 </resources>

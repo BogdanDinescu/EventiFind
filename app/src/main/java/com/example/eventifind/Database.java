@@ -7,7 +7,6 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.fonfon.geohash.GeoHash;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -26,6 +25,7 @@ public final class Database {
     public HashMap<String,Event> eventMap;
     public ArrayList<String> joinedEvents;
     public HashMap<String,Event> hostedEvents;
+    public Boolean admin;
     private MainActivity activity;
 
     public Database(MainActivity context){
@@ -38,6 +38,7 @@ public final class Database {
             eventMap = new HashMap<String, Event>();
             joinedEvents = new ArrayList<String>();
             hostedEvents = new HashMap<String, Event>();
+            admin = false;
         }
         return mDatabase;
     }
@@ -49,6 +50,22 @@ public final class Database {
             @Override
             public void onFailure(@NonNull Exception e) {
                 throw new RuntimeException("Eroare");
+            }
+        });
+    }
+
+    public void checkAdmin(String userId){
+        getDatabaseReference().child("users").child(userId).child("admin").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                admin = dataSnapshot.getValue(Boolean.class);
+                if(admin)
+                    activity.getTabsManager().getAccountFragment().setAdminView();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.e("Canceled",databaseError.toString());
             }
         });
     }
@@ -91,7 +108,7 @@ public final class Database {
     }
 
     public void getJoinedEvents(String id){
-        getDatabaseReference().child("user-data").child(id).addValueEventListener(new ValueEventListener() {
+        getDatabaseReference().child("users").child(id).child("joined").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     if(dataSnapshot.exists()){
@@ -108,9 +125,9 @@ public final class Database {
         });
     }
 
-    // Il adauga la joined (return true) daca nu e deja, altfel il sterge (return false)
+    // Il adauga la joined daca nu e deja, altfel il sterge
     public void joinEvent(final String userId, final String eventId){
-        getDatabaseReference().child("user-data").child(userId).orderByValue().equalTo(eventId).addListenerForSingleValueEvent(new ValueEventListener() {
+        getDatabaseReference().child("users").child(userId).child("joined").orderByValue().equalTo(eventId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(!dataSnapshot.exists()) {

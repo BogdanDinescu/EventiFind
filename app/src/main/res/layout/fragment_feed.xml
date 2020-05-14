@@ -5,13 +5,10 @@
     android:layout_height="match_parent"
     tools:context=".FeedFragment">
 
-    <ListView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/feed_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="20dp"
-        android:elevation="20dp"
         android:scrollbars="none"/>
 
 </RelativeLayout>

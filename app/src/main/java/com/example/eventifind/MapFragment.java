@@ -5,6 +5,7 @@ import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,8 +20,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -39,14 +38,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import static android.content.Context.LOCATION_SERVICE;
-
-public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.InfoWindowAdapter, GoogleMap.OnInfoWindowClickListener {
+public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMapLongClickListener, GoogleMap.InfoWindowAdapter, GoogleMap.OnInfoWindowClickListener{
 
     private static GoogleMap gMap;
     private MapView mapView;
     private List<Marker> markers;
-    private Location currentLocation = null;
     private MainActivity activity;
 
     @Override
@@ -73,10 +69,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         googleMap.setInfoWindowAdapter(this);
         googleMap.setMyLocationEnabled(true);
 
-        // centreaza pe locatia curenta
-        if(currentLocation != null) {
-            centreOnPoint(currentLocation.getLatitude(), currentLocation.getLongitude());
-        }
+        Location location = activity.getLocationService().getCurrentLocation();
+        if (location != null)
+            this.centreOnPoint(location.getLatitude(),location.getLongitude());
     }
 
     public void addMarkers(){
@@ -155,7 +150,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     // la click prelung pe map
     @Override
     public void onMapLongClick(LatLng point) {
-        showDialog(point);
+        if(activity.getDatabase().admin)
+            showDialog(point);
     }
 
     // aceasta functie primeste Latitudine si Longitudine si returneaza stringul cu adresa
@@ -173,24 +169,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         return getActivity().getResources().getString(R.string.Unnamed_location);
     }
 
-    public Location getCurrentLocation(Context context) throws ConnectException{
-
-        LocationManager service = (LocationManager) context.getSystemService(LOCATION_SERVICE);
-
-        // daca GPS sau Conexiune nu sunt pornite arunca exceptie
-        if(!service.isProviderEnabled(LocationManager.GPS_PROVIDER) &&
-        !service.isProviderEnabled(LocationManager.NETWORK_PROVIDER) ) {
-            throw new ConnectException("GPS or Connection unavailable");
-        }
-
-        Criteria criteria = new Criteria();
-        String provider = service.getBestProvider(criteria, false);
+    public String getCityLocation(LatLng point) {
+        Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
         try {
-            currentLocation = service.getLastKnownLocation(provider);
-        } catch (SecurityException e){
+            List<Address> listAddresses = geocoder.getFromLocation(point.latitude, point.longitude, 1);
+            if (null != listAddresses && listAddresses.size() > 0) {
+                return listAddresses.get(0).getLocality();
+            }
+        } catch (IOException e) {
             e.printStackTrace();
+            return e.getMessage();
         }
-        return currentLocation;
+        return getActivity().getResources().getString(R.string.Unnamed_location);
+
     }
 
     public void centreOnPoint(double latitude, double longitude){
