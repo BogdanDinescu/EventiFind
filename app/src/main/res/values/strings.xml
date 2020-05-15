@@ -26,4 +26,5 @@
     <string name="Event_deleted">Event Deleted</string>
     <string name="Location_unavailable">Location unavailable. Tap to retry</string>
     <string name="Internet_unavailable">Internet connection unavailable. Tap to retry</string>
+    <string name="Not_Today">No events found on selected date</string>
 </resources>

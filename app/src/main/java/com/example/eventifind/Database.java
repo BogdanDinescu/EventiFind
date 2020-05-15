@@ -54,13 +54,15 @@ public final class Database {
         });
     }
 
-    public void checkAdmin(String userId){
+    public void checkAdminGetHosted(final String userId){
         getDatabaseReference().child("users").child(userId).child("admin").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 admin = dataSnapshot.getValue(Boolean.class);
-                if(admin)
+                if(admin) {
                     activity.getTabsManager().getAccountFragment().setAdminView();
+                    getHostedEvents(userId);
+                }
             }
 
             @Override
@@ -117,7 +119,6 @@ public final class Database {
                         joinedEvents.addAll(joinedEventsMap.values());
                     }
                     activity.getTabsManager().getMapFragment().colorMarkers();
-                    activity.getTabsManager().getFeedFragment().loadFeed();
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -134,10 +135,17 @@ public final class Database {
                 if(!dataSnapshot.exists()) {
                     String key = dataSnapshot.getRef().push().getKey();
                     dataSnapshot.getRef().child(key).setValue(eventId);
+                    activity.getTabsManager().getFeedFragment().buttonSetText(eventId,false);
+                    activity.getTabsManager().getAccountFragment().buttonSetText(eventId,false);
+                    activity.getTabsManager().getCalendarFragment().buttonSetText(eventId,false);
                 }else {
                     for(DataSnapshot d:dataSnapshot.getChildren()){
-                        if (d.getValue().equals(eventId))
+                        if (d.getValue().equals(eventId)) {
                             d.getRef().removeValue();
+                            activity.getTabsManager().getFeedFragment().buttonSetText(eventId,true);
+                            activity.getTabsManager().getAccountFragment().buttonSetText(eventId,true);
+                            activity.getTabsManager().getCalendarFragment().buttonSetText(eventId,true);
+                        }
                     }
                 }
             }

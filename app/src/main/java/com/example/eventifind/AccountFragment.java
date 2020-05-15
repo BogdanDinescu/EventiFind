@@ -25,6 +25,7 @@ public class AccountFragment extends Fragment {
     private Button joinedEvBtn;
     private Button myEvBtn;
     private RecyclerView recyclerView;
+    private RecyclerAdapter adapter;
     private MainActivity activity;
 
     @Override
@@ -39,8 +40,6 @@ public class AccountFragment extends Fragment {
         joinedEvBtn = view.findViewById(R.id.joined_events);
         myEvBtn = view.findViewById(R.id.my_events);
         recyclerView = view.findViewById(R.id.list_event);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(activity);
-        recyclerView.setLayoutManager(layoutManager);
         activity = (MainActivity) getActivity();
 
         // cand este apasat sign out
@@ -74,17 +73,33 @@ public class AccountFragment extends Fragment {
     }
 
     private void addJoinedEventsToList() {
-        RecyclerAdapter adapter = new RecyclerAdapter(activity.getDatabase().joinedEvents, activity.getUserId(), activity.getDatabase().eventMap);
+        adapter = new RecyclerAdapter(activity.getDatabase().joinedEvents, activity.getDatabase().eventMap);
         recyclerView.setAdapter(adapter);
     }
 
     private void addHostedEventsToList(){
-        RecyclerAdapter adapter = new RecyclerAdapter(activity.getDatabase().hostedEvents, activity.getUserId());
+        adapter = new RecyclerAdapter(activity.getDatabase().hostedEvents);
         recyclerView.setAdapter(adapter);
     }
 
     public void setAdminView() {
         this.getView().findViewById(R.id.my_events).setEnabled(true);
+    }
+
+    public void buttonSetText(String key,boolean join) {
+        if(adapter != null) {
+            // daca exista in lista
+            if(adapter.getIndex(key) >= 0) {
+                Button joinButton = recyclerView.getLayoutManager().findViewByPosition(adapter.getIndex(key)).findViewById(R.id.join);
+                if(join) {
+                    joinButton.setTextColor(activity.getResources().getColor(R.color.colorPrimary));
+                    joinButton.setText(activity.getResources().getString(R.string.Join));
+                } else {
+                    joinButton.setTextColor(activity.getResources().getColor(R.color.colorAccent));
+                    joinButton.setText(activity.getResources().getString(R.string.Unjoin));
+                }
+            }
+        }
     }
 
     private void logout(){

@@ -8,7 +8,6 @@ import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -64,8 +63,7 @@ public class MainActivity extends AppCompatActivity {
     public void startWithLocation(Location location) {
         database.queryClosestEvents(location,10);
         database.getJoinedEvents(user.getUid());
-        database.getHostedEvents(user.getUid());
-        database.checkAdmin(user.getUid());
+        database.checkAdminGetHosted(user.getUid());
         tabsManager.CreateTabs();
     }
 
