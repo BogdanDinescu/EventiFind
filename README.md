@@ -1,5 +1,5 @@
 # EventiFind
-![EventiFind logo](https://github.com/BogdanDinescu/EventiFind/blob/master/EventiFind.png?raw=true)
+![EventiFind logo](https://github.com/BogdanDinescu/EventiFind/blob/master/EventiFind.png?raw=true)</br>
 Done By </br>Dinescu Bogdan-George</br>
         Alexiu Adrian</br>
         Sandu Alexandru-Cristian</br>
