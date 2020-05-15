@@ -1,4 +1,5 @@
 # EventiFind
+![EventiFind logo](![alt text](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true)?raw=true)
 Done By </br>Dinescu Bogdan-George</br>
         Alexiu Adrian</br>
         Sandu Alexandru-Cristian</br>
