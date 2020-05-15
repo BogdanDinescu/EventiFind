@@ -1,5 +1,5 @@
 # EventIFind
-Done By Dinescu Bogdan-George
-        Alexiu Adrian
-        Sandu Alexandru-Cristian
-        Bondoc Gabriel
+Done By Dinescu Bogdan-George</br>
+        Alexiu Adrian</br>
+        Sandu Alexandru-Cristian</br>
+        Bondoc Gabriel</br>
