@@ -10,6 +10,5 @@ EventIFind is very easy to use, all you have to do is just to look on the map fo
 After that you are good to go.</br>
 <p align="center">
   <img src="https://github.com/BogdanDinescu/EventiFind/blob/master/EventiFind.png">
+  <img src="<img src="https://github.com/BogdanDinescu/EventiFind/blob/master/EventiFind.png">">
 </p>
-
-![EventiFind logo](https://github.com/BogdanDinescu/EventiFind/blob/master/EventiFind.png?raw=true)
