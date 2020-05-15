@@ -1,4 +1,4 @@
-# EventiFind
+# EventIFind
 Done By Dinescu Bogdan-George
         Alexiu Adrian
         Sandu Alexandru-Cristian
