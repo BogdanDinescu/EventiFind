@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -123,6 +124,11 @@ public class MainActivity extends AppCompatActivity {
         return locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER) && locationManager.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER);
     }
 
+    public void showToast (String toastString) {
+        Toast toast = Toast.makeText(this, toastString, Toast.LENGTH_LONG);
+        toast.show();
+    }
+
     private void setErrorText(String text) {
         errorText.setText(text);
         errorText.setVisibility(View.VISIBLE);
@@ -141,4 +147,5 @@ public class MainActivity extends AppCompatActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
+
 }

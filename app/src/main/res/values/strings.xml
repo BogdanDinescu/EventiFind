@@ -27,4 +27,8 @@
     <string name="Location_unavailable">Location unavailable. Tap to retry</string>
     <string name="Internet_unavailable">Internet connection unavailable. Tap to retry</string>
     <string name="Not_Today">No events found on selected date</string>
+    <string name="Add_admin">Add admin</string>
+    <string name="email">User\'s email</string>
+    <string name="user_not_exist">User with this email does not exist</string>
+    <string name="user_admined">User made admin</string>
 </resources>

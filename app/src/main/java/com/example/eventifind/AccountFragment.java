@@ -13,6 +13,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -24,6 +25,7 @@ public class AccountFragment extends Fragment {
     private Button signOutBtn;
     private Button joinedEvBtn;
     private Button myEvBtn;
+    private Button addAdminBtn;
     private RecyclerView recyclerView;
     private RecyclerAdapter adapter;
     private MainActivity activity;
@@ -39,6 +41,7 @@ public class AccountFragment extends Fragment {
         signOutBtn = view.findViewById(R.id.log_out_button);
         joinedEvBtn = view.findViewById(R.id.joined_events);
         myEvBtn = view.findViewById(R.id.my_events);
+        addAdminBtn = view.findViewById(R.id.add_admin);
         recyclerView = view.findViewById(R.id.list_event);
         activity = (MainActivity) getActivity();
 
@@ -65,6 +68,13 @@ public class AccountFragment extends Fragment {
                 addHostedEventsToList();
             }
         });
+        // cand e apasat add admin (buton ascuns by default)
+        addAdminBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addAdminDialog();
+            }
+        });
 
         TextView name = view.findViewById(R.id.account_name);
         name.setText(activity.getUserName());
@@ -84,6 +94,7 @@ public class AccountFragment extends Fragment {
 
     public void setAdminView() {
         this.getView().findViewById(R.id.my_events).setEnabled(true);
+        this.getView().findViewById(R.id.add_admin).setVisibility(View.VISIBLE);
     }
 
     public void buttonSetText(String key,boolean join) {
@@ -100,6 +111,11 @@ public class AccountFragment extends Fragment {
                 }
             }
         }
+    }
+
+    private void addAdminDialog() {
+        DialogFragment newFragment = new AddAdminDialog(activity);
+        newFragment.show(getFragmentManager(), "addAdmin");
     }
 
     private void logout(){

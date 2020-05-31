@@ -191,6 +191,30 @@ public final class Database {
             }
         });
     }
+
+    public void addAdminByEmail(String email) {
+        if (this.admin) {
+            getDatabaseReference().child("users").orderByChild("email").equalTo(email).limitToFirst(1).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    Log.e("result", dataSnapshot.toString());
+                    if (dataSnapshot.exists()) {
+                        for (DataSnapshot user : dataSnapshot.getChildren()) {
+                            user.getRef().child("admin").setValue(true);
+                        }
+                        activity.showToast(activity.getResources().getString(R.string.user_admined));
+                    } else {
+                        activity.showToast(activity.getResources().getString(R.string.user_not_exist));
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Log.e("onCancelled", databaseError.toString());
+                }
+            });
+        }
+    }
 }
 
 class Event implements Serializable {

@@ -1,19 +1,14 @@
 package com.example.eventifind;
 
-import android.content.Context;
 import android.location.Address;
-import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -137,14 +132,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     public void onInfoWindowClick(Marker marker) {
         //marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
         marker.hideInfoWindow();
-        Toast toast;
         if(activity.getDatabase().joinedEvents.contains(marker.getTitle())) {
-            toast = Toast.makeText(getContext(), getResources().getString(R.string.Unjoined), Toast.LENGTH_LONG);
+            activity.showToast(getResources().getString(R.string.Unjoined));
         } else {
-            toast = Toast.makeText(getContext(), getResources().getString(R.string.Joined), Toast.LENGTH_LONG);
+            activity.showToast(getResources().getString(R.string.Joined));
         }
         activity.getDatabase().joinEvent(activity.getUserId(),marker.getTitle());
-        toast.show();
     }
 
     // la click prelung pe map
