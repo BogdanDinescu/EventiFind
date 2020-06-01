@@ -7,6 +7,7 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -124,9 +125,14 @@ public class MainActivity extends AppCompatActivity {
         return locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER) && locationManager.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER);
     }
 
-    public void showToast (String toastString) {
+    public void showToast(String toastString) {
         Toast toast = Toast.makeText(this, toastString, Toast.LENGTH_LONG);
         toast.show();
+    }
+
+    public void smallVibration() {
+        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        if (v != null) v.vibrate(100);
     }
 
     private void setErrorText(String text) {

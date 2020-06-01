@@ -79,10 +79,25 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
 
         final Event item = getItem(position);
+
+        // Join/unjoin Button
+        if(activity.getDatabase().joinedEvents.contains(getKey(position))) {
+            holder.join.setTextColor(activity.getResources().getColor(R.color.colorAccent));
+            holder.join.setText(activity.getResources().getString(R.string.Unjoin));
+        } else {
+            holder.join.setTextColor(activity.getResources().getColor(R.color.colorPrimary));
+            holder.join.setText(activity.getResources().getString(R.string.Join));
+        }
+        holder.join.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                activity.getDatabase().joinEvent(activity.getUserId(),getKey(position));
+            }
+        });
+
         // caz particular evenimentul a fost sters anterior, el inca figureaza ca joined.
         if (item == null) {
             holder.title.setText(activity.getResources().getString(R.string.Event_deleted));
-            holder.join.setVisibility(View.GONE);
             return;
         }
         // Nume
@@ -109,22 +124,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
                 activity.getTabsManager().getMapFragment().centreOnPoint(item.getLatitude(),item.getLongitude());
             }
         });
-
-        // Join/unjoin Button
-        if(activity.getDatabase().joinedEvents.contains(getKey(position))) {
-            holder.join.setTextColor(activity.getResources().getColor(R.color.colorAccent));
-            holder.join.setText(activity.getResources().getString(R.string.Unjoin));
-        } else {
-            holder.join.setTextColor(activity.getResources().getColor(R.color.colorPrimary));
-            holder.join.setText(activity.getResources().getString(R.string.Join));
-        }
-        holder.join.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                activity.getDatabase().joinEvent(activity.getUserId(),getKey(position));
-            }
-        });
-
         // Delete event
         if(activity.getDatabase().hostedEvents.containsKey(getKey(position)))
             holder.delete.setVisibility(View.VISIBLE);
