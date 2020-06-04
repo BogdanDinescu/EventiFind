@@ -1,21 +1,24 @@
 package com.example.eventifind;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -26,6 +29,7 @@ public class AccountFragment extends Fragment {
     private Button joinedEvBtn;
     private Button myEvBtn;
     private Button addAdminBtn;
+    private ToggleButton darkToggleBtn;
     private RecyclerView recyclerView;
     private RecyclerAdapter adapter;
     private MainActivity activity;
@@ -43,6 +47,7 @@ public class AccountFragment extends Fragment {
         myEvBtn = view.findViewById(R.id.my_events);
         addAdminBtn = view.findViewById(R.id.add_admin);
         recyclerView = view.findViewById(R.id.list_event);
+        darkToggleBtn = view.findViewById(R.id.dark_toggle);
         activity = (MainActivity) getActivity();
 
         // cand este apasat sign out
@@ -68,11 +73,21 @@ public class AccountFragment extends Fragment {
                 addHostedEventsToList();
             }
         });
+
         // cand e apasat add admin (buton ascuns by default)
         addAdminBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 addAdminDialog();
+            }
+        });
+
+        SharedPreferences sharedPref = activity.getSharedPreferences("preferences", Context.MODE_PRIVATE);
+        boolean darkmode = sharedPref.getBoolean("dark",false);
+        darkToggleBtn.setChecked(darkmode);
+        darkToggleBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                activity.setDarkMode(isChecked);
             }
         });
 

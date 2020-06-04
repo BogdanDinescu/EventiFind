@@ -1,5 +1,7 @@
 package com.example.eventifind;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -22,11 +24,11 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
-import java.net.ConnectException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +64,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         googleMap.setOnMapLongClickListener(this);
         googleMap.setOnInfoWindowClickListener(this);
         googleMap.setInfoWindowAdapter(this);
+
+        SharedPreferences sharedPref = activity.getSharedPreferences("preferences", Context.MODE_PRIVATE);
+        boolean darkmode = sharedPref.getBoolean("dark",false);
+        if (darkmode) googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(activity,R.raw.darkmap));
+
         googleMap.setMyLocationEnabled(true);
 
         Location location = activity.getLocationService().getCurrentLocation();

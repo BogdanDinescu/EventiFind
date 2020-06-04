@@ -202,9 +202,9 @@ public final class Database {
                         for (DataSnapshot user : dataSnapshot.getChildren()) {
                             user.getRef().child("admin").setValue(true);
                         }
-                        activity.showToast(activity.getResources().getString(R.string.user_admined));
+                        activity.showToast(activity.getResources().getString(R.string.User_admined));
                     } else {
-                        activity.showToast(activity.getResources().getString(R.string.user_not_exist));
+                        activity.showToast(activity.getResources().getString(R.string.User_not_exist));
                     }
                 }
 
