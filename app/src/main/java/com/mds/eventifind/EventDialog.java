@@ -1,4 +1,4 @@
-package com.example.eventifind;
+package com.mds.eventifind;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
