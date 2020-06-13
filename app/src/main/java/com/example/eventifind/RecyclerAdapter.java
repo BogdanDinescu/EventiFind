@@ -125,16 +125,15 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
             }
         });
         // Delete event
-        if(activity.getDatabase().hostedEvents.containsKey(getKey(position)))
+        if(activity.getDatabase().hostedEvents.containsKey(getKey(position))) {
             holder.delete.setVisibility(View.VISIBLE);
-        else
-            holder.delete.setVisibility(View.GONE);
-        holder.delete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                activity.getDatabase().deleteEvent(getKey(position));
-            }
-        });
+            holder.delete.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    activity.getDatabase().deleteEvent(getKey(position));
+                }
+            });
+        }
 
         // Expand button
         holder.expand.setOnClickListener(new View.OnClickListener() {

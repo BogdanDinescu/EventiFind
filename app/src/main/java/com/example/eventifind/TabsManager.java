@@ -1,7 +1,5 @@
 package com.example.eventifind;
 
-import android.app.Activity;
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -16,7 +14,7 @@ import java.util.List;
 // Aceasta clasa creeaza dinamic meniul cu taburi
 class TabsManager {
     private FragmentManager fragmentManager;
-    private Activity activity;
+    private MainActivity activity;
     private ViewPager viewPager;
     private TabLayout tabLayout;
 
@@ -25,7 +23,7 @@ class TabsManager {
     private CalendarFragment calendarFragment;
     private AccountFragment accountFragment;
 
-    TabsManager(Activity activity, FragmentManager fm) {
+    TabsManager(MainActivity activity, FragmentManager fm) {
         this.activity = activity;
         this.fragmentManager = fm;
     }

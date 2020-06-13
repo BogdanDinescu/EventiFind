@@ -21,26 +21,34 @@ import java.util.HashMap;
 import java.util.List;
 
 public final class Database {
-    private DatabaseReference mDatabase = null;
+    private static Database instance = null;
+    public boolean queriedAlready;
+    private DatabaseReference databaseRef;
     public HashMap<String,Event> eventMap;
     public ArrayList<String> joinedEvents;
     public HashMap<String,Event> hostedEvents;
-    public Boolean admin;
+    public boolean admin;
     private MainActivity activity;
 
-    public Database(MainActivity context){
+    private Database(MainActivity context) {
         this.activity = context;
+        this.databaseRef = FirebaseDatabase.getInstance().getReference();
+        this.eventMap = new HashMap<String, Event>();
+        this.joinedEvents = new ArrayList<String>();
+        this.hostedEvents = new HashMap<String, Event>();
+        this.admin = false;
+        this.queriedAlready = false;
     }
 
-    private DatabaseReference getDatabaseReference(){
-        if(mDatabase == null) {
-            mDatabase = FirebaseDatabase.getInstance().getReference();
-            eventMap = new HashMap<String, Event>();
-            joinedEvents = new ArrayList<String>();
-            hostedEvents = new HashMap<String, Event>();
-            admin = false;
+    public static Database getDatabase(MainActivity context) {
+        if (instance == null) {
+            instance = new Database(context);
         }
-        return mDatabase;
+        return instance;
+    }
+
+    private DatabaseReference getDatabaseReference() {
+        return instance.databaseRef;
     }
 
     public void createEvent(String name, String description, Date data , double latitude, double longitude, String ownerId, String ownerName) {
@@ -55,10 +63,10 @@ public final class Database {
     }
 
     public void checkAdminGetHosted(final String userId){
-        getDatabaseReference().child("users").child(userId).child("admin").addListenerForSingleValueEvent(new ValueEventListener() {
+        getDatabaseReference().child("users").child(userId).child("admin").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                admin = dataSnapshot.getValue(Boolean.class);
+                admin = (boolean) dataSnapshot.getValue();
                 if(admin) {
                     activity.getTabsManager().getAccountFragment().setAdminView();
                     getHostedEvents(userId);
@@ -72,7 +80,7 @@ public final class Database {
         });
     }
 
-    public void queryClosestEvents(Location location, Integer numberOfEvents){
+    public void queryClosestEvents(Location location, Integer numberOfEvents) {
         // obtine hash-ul pentru locatia data
         final GeoHash hash = GeoHash.fromLocation(location,4);
         // obtine regiunile din imprejur
@@ -97,6 +105,7 @@ public final class Database {
                 activity.getTabsManager().getMapFragment().addMarkers();
                 activity.getTabsManager().getFeedFragment().loadFeed();
                 activity.getTabsManager().getMapFragment().colorMarkers();
+                queriedAlready = true;
                 activity.hideProgressBar();
             }
             // daca citirea a esuat
@@ -105,7 +114,7 @@ public final class Database {
                 Log.e("Cancelled", databaseError.toString());
             }
         };
-        // Querry
+        // Query
         getDatabaseReference().child("events").limitToFirst(numberOfEvents).addValueEventListener(eventListener);
     }
 
@@ -182,7 +191,8 @@ public final class Database {
                 joinedEvents.remove(eventId);
                 hostedEvents.remove(eventId);
                 activity.getTabsManager().getMapFragment().deleteMarker(eventId);
-                activity.getTabsManager().getFeedFragment().loadFeed();
+                activity.getTabsManager().getFeedFragment().notifyEventCardRemoved(eventId);
+                activity.getTabsManager().getAccountFragment().notifyEventCardRemoved(eventId);
             }
 
             @Override

@@ -9,7 +9,6 @@ import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Vibrator;
-import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -17,6 +16,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -37,11 +37,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         // seteaza tema in functie de setarile utilizatorului
         sharedPref = getSharedPreferences("preferences", Context.MODE_PRIVATE);
-        boolean darkMode = sharedPref.getBoolean("dark",false);
-        if (darkMode)
+        boolean darkMode = sharedPref.getBoolean("dark", false);
+        if (darkMode) {
             setTheme(R.style.AppTheme_Dark);
-        else
+        } else {
             setTheme(R.style.AppTheme);
+        }
 
         setContentView(R.layout.activity_main);
         progressBar = findViewById(R.id.progressBar_cyclic);
@@ -57,21 +58,33 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // initializari
-        database = new Database(this);
+        user = FirebaseAuth.getInstance().getCurrentUser();
+        // daca nu e logat
+        if (user == null)
+            startLogin();
+
+        database = Database.getDatabase(this);
         locationService = new LocationService(this);
         tabsManager = new TabsManager(this, getSupportFragmentManager());
-        user = FirebaseAuth.getInstance().getCurrentUser();
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
         Location location = locationService.getCurrentLocation();
         if (location != null)
             startWithLocation(location);
     }
 
     public void startWithLocation(Location location) {
-        database.queryClosestEvents(location,10);
-        database.getJoinedEvents(user.getUid());
-        database.checkAdminGetHosted(user.getUid());
         tabsManager.CreateTabs();
+        if (!database.queriedAlready) {
+            database.queryClosestEvents(location, 10);
+            database.getJoinedEvents(user.getUid());
+            database.checkAdminGetHosted(user.getUid());
+        } else {
+            hideProgressBar();
+        }
     }
 
     // cand au fost acceptate sau respinse permisiunile se apeleaza functia asta
@@ -141,10 +154,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setDarkMode(boolean value) {
-        Log.e("e", String.valueOf(value));
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putBoolean("dark",value);
         editor.commit();
+        if(value) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
         reload(null);
     }
 
@@ -161,13 +178,17 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    // go home on back pressed
     @Override
     public void onBackPressed() {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_HOME);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
+    }
+
+    public void startLogin() {
+        Intent i = new Intent(this, LoginActivity.class);
+        startActivityForResult(i,1);
     }
 
 }

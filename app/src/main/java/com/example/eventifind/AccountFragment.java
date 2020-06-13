@@ -2,7 +2,6 @@ package com.example.eventifind;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -49,6 +48,7 @@ public class AccountFragment extends Fragment {
         recyclerView = view.findViewById(R.id.list_event);
         darkToggleBtn = view.findViewById(R.id.dark_toggle);
         activity = (MainActivity) getActivity();
+        if (activity.getDatabase().admin) setAdminView();
 
         // cand este apasat sign out
         signOutBtn.setOnClickListener(new View.OnClickListener() {
@@ -108,15 +108,18 @@ public class AccountFragment extends Fragment {
     }
 
     public void setAdminView() {
-        this.getView().findViewById(R.id.my_events).setEnabled(true);
-        this.getView().findViewById(R.id.add_admin).setVisibility(View.VISIBLE);
+        if(this.getView() != null) {
+            this.getView().findViewById(R.id.my_events).setEnabled(true);
+            this.getView().findViewById(R.id.add_admin).setVisibility(View.VISIBLE);
+        }
     }
 
     public void buttonSetText(String key,boolean join) {
         if(adapter != null) {
             // daca exista in lista
-            if(adapter.getIndex(key) >= 0) {
-                Button joinButton = recyclerView.getLayoutManager().findViewByPosition(adapter.getIndex(key)).findViewById(R.id.join);
+            int index = adapter.getIndex(key);
+            if(index >= 0) {
+                Button joinButton = recyclerView.getLayoutManager().findViewByPosition(index).findViewById(R.id.join);
                 if(join) {
                     joinButton.setTextColor(activity.getResources().getColor(R.color.colorPrimary));
                     joinButton.setText(activity.getResources().getString(R.string.Join));
@@ -124,6 +127,15 @@ public class AccountFragment extends Fragment {
                     joinButton.setTextColor(activity.getResources().getColor(R.color.colorAccent));
                     joinButton.setText(activity.getResources().getString(R.string.Unjoin));
                 }
+            }
+        }
+    }
+
+    public void notifyEventCardRemoved(String key) {
+        if (adapter != null) {
+            int index = adapter.getIndex(key);
+            if (index >= 0) {
+                adapter.notifyItemRemoved(index);
             }
         }
     }
@@ -139,7 +151,7 @@ public class AccountFragment extends Fragment {
         builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 LoginActivity.signOut();
-                gotoLogin();
+                activity.startLogin();
                 dialog.dismiss();
             }
         });
@@ -153,8 +165,4 @@ public class AccountFragment extends Fragment {
         alert.show();
     }
 
-    private void gotoLogin() {
-        Intent intent = new Intent(getActivity(),LoginActivity.class);
-        startActivity(intent);
-    }
 }

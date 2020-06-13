@@ -74,6 +74,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         Location location = activity.getLocationService().getCurrentLocation();
         if (location != null)
             this.centreOnPoint(location.getLatitude(),location.getLongitude());
+
+        if (activity.getDatabase().queriedAlready) {
+            addMarkers();
+            colorMarkers();
+        }
     }
 
     public void addMarkers(){

@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -27,9 +28,9 @@ import com.google.firebase.database.FirebaseDatabase;
 public class LoginActivity extends AppCompatActivity {
 
     private SignInButton signInButton;
-    private static GoogleSignInClient mGoogleSignInClient;
+    private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
-    private int RC_SIGN_IN = 1;
+    private int RC_SIGN_IN = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,21 +54,10 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        // la start daca contul nu e null, inseamna ca a fost logat deja si intra direct in MainActivity
-        //GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if(currentUser != null)
-            gotoMain();
-    }
-
     private void gotoMain() {
-        Intent intent = new Intent(this, MainActivity.class);
-        //intent.putExtra("account", account);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
+        Intent intent = new Intent();
+        setResult(Activity.RESULT_OK, intent);
+        finish();
     }
 
     private void singInWithGoogle() {
@@ -115,7 +105,6 @@ public class LoginActivity extends AppCompatActivity {
 
     }
     static void signOut() {
-        mGoogleSignInClient.signOut();
         FirebaseAuth.getInstance().signOut();
     }
 

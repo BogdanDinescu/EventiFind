@@ -1,6 +1,7 @@
 package com.example.eventifind;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,8 +28,9 @@ public class FeedFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         recyclerView = view.findViewById(R.id.feed_list);
         activity = (MainActivity) getActivity();
+        if (activity.getDatabase().queriedAlready)
+            loadFeed();
     }
-
 
     public void loadFeed(){
         super.onResume();
@@ -39,8 +41,9 @@ public class FeedFragment extends Fragment {
     public void buttonSetText(String key,boolean join) {
         if(adapter != null) {
             // daca exista in lista
-            if(adapter.getIndex(key) >= 0) {
-                Button joinButton = recyclerView.getLayoutManager().findViewByPosition(adapter.getIndex(key)).findViewById(R.id.join);
+            int index = adapter.getIndex(key);
+            if(index >= 0) {
+                Button joinButton = recyclerView.getLayoutManager().findViewByPosition(index).findViewById(R.id.join);
                 if(join) {
                     joinButton.setTextColor(activity.getResources().getColor(R.color.colorPrimary));
                     joinButton.setText(activity.getResources().getString(R.string.Join));
@@ -51,5 +54,15 @@ public class FeedFragment extends Fragment {
             }
         }
     }
+
+    public void notifyEventCardRemoved(String key) {
+        if (adapter != null) {
+            int index = adapter.getIndex(key);
+            if (index >= 0) {
+                adapter.notifyItemRemoved(index);
+            }
+        }
+    }
+
 
 }
