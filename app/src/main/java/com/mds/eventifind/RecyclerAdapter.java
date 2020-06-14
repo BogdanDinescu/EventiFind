@@ -1,15 +1,10 @@
-package com.example.eventifind;
+package com.mds.eventifind;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.RotateAnimation;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -28,7 +23,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     private final HashMap<String,Event> map;
     private final ArrayList<String> keyList;
     private MainActivity activity;
-    private final String userId;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
@@ -56,14 +50,13 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
         }
     }
 
-    public RecyclerAdapter(HashMap<String, Event> map, String userId){
+    public RecyclerAdapter(HashMap<String, Event> map){
         this.map = map;
         this.keyList = new ArrayList<String>(map.keySet());
-        this.userId = userId;
     }
 
-    // constructor folosit in acoount tab cand ai o submultime de chei de evenimente
-    public RecyclerAdapter(ArrayList<String> list, String userId, HashMap<String,Event> map){
+    // constructor folosit in acount tab cand ai o submultime de chei de evenimente
+    public RecyclerAdapter(ArrayList<String> list, HashMap<String,Event> map){
         this.map = new HashMap<>();
         for(Map.Entry<String,Event> e : map.entrySet()){
             if(list.contains(e.getKey())){
@@ -71,7 +64,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
             }
         }
         this.keyList = new ArrayList<>(list);
-        this.userId = userId;
     }
 
     @NonNull
@@ -87,10 +79,25 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
 
         final Event item = getItem(position);
+
+        // Join/unjoin Button
+        if(activity.getDatabase().joinedEvents.contains(getKey(position))) {
+            holder.join.setTextColor(activity.getResources().getColor(R.color.colorAccent));
+            holder.join.setText(activity.getResources().getString(R.string.Unjoin));
+        } else {
+            holder.join.setTextColor(activity.getResources().getColor(R.color.colorPrimary));
+            holder.join.setText(activity.getResources().getString(R.string.Join));
+        }
+        holder.join.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                activity.getDatabase().joinEvent(activity.getUserId(),getKey(position));
+            }
+        });
+
         // caz particular evenimentul a fost sters anterior, el inca figureaza ca joined.
         if (item == null) {
             holder.title.setText(activity.getResources().getString(R.string.Event_deleted));
-            holder.join.setVisibility(View.GONE);
             return;
         }
         // Nume
@@ -117,29 +124,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
                 activity.getTabsManager().getMapFragment().centreOnPoint(item.getLatitude(),item.getLongitude());
             }
         });
-
-        // Join/unjoin Button
-        if(activity.getDatabase().joinedEvents.contains(getKey(position))) {
-            holder.join.setTextColor(activity.getResources().getColor(R.color.colorAccent));
-            holder.join.setText(activity.getResources().getString(R.string.Unjoin));
-        } else {
-            holder.join.setTextColor(activity.getResources().getColor(R.color.colorPrimary));
-            holder.join.setText(activity.getResources().getString(R.string.Join));
-        }
-        holder.join.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(holder.join.getText() == activity.getResources().getString(R.string.Join)) {
-                    holder.join.setTextColor(activity.getResources().getColor(R.color.colorAccent));
-                    holder.join.setText(activity.getResources().getString(R.string.Unjoin));
-                } else {
-                    holder.join.setTextColor(activity.getResources().getColor(R.color.colorPrimary));
-                    holder.join.setText(activity.getResources().getString(R.string.Join));
-                }
-                activity.getDatabase().joinEvent(userId,getKey(position));
-            }
-        });
-
         // Delete event
         if(activity.getDatabase().hostedEvents.containsKey(getKey(position)))
             holder.delete.setVisibility(View.VISIBLE);
@@ -176,6 +160,10 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
         return keyList.get(position);
     }
 
+    public int getIndex(String key) {
+        return keyList.indexOf(key);
+    }
+
     @Override
     public long getItemId(int position) {
         return 0;
@@ -184,18 +172,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.ViewHo
     @Override
     public int getItemCount() {
         return keyList.size();
-    }
-
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Log.e("eee",getItem(position).getName());
-        Button myButton = new Button(activity);
-        myButton.setText("EEEE");
-        myButton.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT));
-
-        LinearLayout linearLayout = view.findViewById(R.id.container);
-        linearLayout.addView(myButton);
     }
 
 

@@ -1,4 +1,4 @@
-package com.example.eventifind;
+package com.mds.eventifind;
 
 import org.junit.Test;
 

@@ -1,4 +1,4 @@
-package com.example.eventifind;
+package com.mds.eventifind;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -104,6 +104,7 @@ public class LoginActivity extends AppCompatActivity {
                             // Sign in success
                             FirebaseUser user = mAuth.getCurrentUser();
                             FirebaseDatabase.getInstance().getReference().child("users").child(user.getUid()).child("admin").setValue(false);
+                            FirebaseDatabase.getInstance().getReference().child("users").child(user.getUid()).child("email").setValue(user.getEmail());
                             gotoMain();
                         } else {
                             // If sign in fails
