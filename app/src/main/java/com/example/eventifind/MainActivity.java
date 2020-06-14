@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.view.View;
@@ -55,33 +54,33 @@ public class MainActivity extends AppCompatActivity {
 
         if(!isLocationAvailable(this)) {
             setErrorText(getResources().getString(R.string.Location_unavailable));
+            return;
+        }
+
+        // daca nu e logat
+        user = getUser();
+        if (user == null) {
+            goToLogin();
+            return;
         }
 
         // initializari
-        user = FirebaseAuth.getInstance().getCurrentUser();
-        // daca nu e logat
-        if (user == null)
-            startLogin();
-
         database = Database.getDatabase(this);
         locationService = new LocationService(this);
         tabsManager = new TabsManager(this, getSupportFragmentManager());
-    }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
         Location location = locationService.getCurrentLocation();
         if (location != null)
             startWithLocation(location);
     }
 
+
     public void startWithLocation(Location location) {
         tabsManager.CreateTabs();
         if (!database.queriedAlready) {
             database.queryClosestEvents(location, 10);
-            database.getJoinedEvents(user.getUid());
-            database.checkAdminGetHosted(user.getUid());
+            database.getJoinedEvents(getUserId());
+            database.checkAdminGetHosted(getUserId());
         } else {
             hideProgressBar();
         }
@@ -98,7 +97,9 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         }
-        this.recreate();
+        Location location = locationService.getCurrentLocation();
+        if (location != null)
+            startWithLocation(location);
     }
 
     public LocationService getLocationService() {
@@ -113,16 +114,22 @@ public class MainActivity extends AppCompatActivity {
         return database;
     }
 
-    public String getUserId(){
-        return user.getUid();
+    public String getUserId() {
+        return getUser().getUid();
     }
 
-    public String getUserName(){
-        return user.getDisplayName();
+    public String getUserName() {
+        return getUser().getDisplayName();
     }
 
-    public Uri getUserPhoto(){
-        return user.getPhotoUrl();
+    public FirebaseUser getUser() {
+        if (user == null)
+            user = FirebaseAuth.getInstance().getCurrentUser();
+        return user;
+    }
+
+    public void setUser(FirebaseUser user) {
+        this.user = user;
     }
 
     public void showProgressBar(){
@@ -186,9 +193,10 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    public void startLogin() {
+    public void goToLogin() {
         Intent i = new Intent(this, LoginActivity.class);
-        startActivityForResult(i,1);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(i);
     }
 
 }

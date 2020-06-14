@@ -5,17 +5,20 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.ToggleButton;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
@@ -27,10 +30,10 @@ public class AccountFragment extends Fragment {
     private Button signOutBtn;
     private Button joinedEvBtn;
     private Button myEvBtn;
-    private Button addAdminBtn;
-    private ToggleButton darkToggleBtn;
+    private ImageButton popUpBtn;
     private RecyclerView recyclerView;
     private RecyclerAdapter adapter;
+    private SharedPreferences sharedPref;
     private MainActivity activity;
 
     @Override
@@ -44,9 +47,8 @@ public class AccountFragment extends Fragment {
         signOutBtn = view.findViewById(R.id.log_out_button);
         joinedEvBtn = view.findViewById(R.id.joined_events);
         myEvBtn = view.findViewById(R.id.my_events);
-        addAdminBtn = view.findViewById(R.id.add_admin);
         recyclerView = view.findViewById(R.id.list_event);
-        darkToggleBtn = view.findViewById(R.id.dark_toggle);
+        popUpBtn = view.findViewById(R.id.more_button);
         activity = (MainActivity) getActivity();
         if (activity.getDatabase().admin) setAdminView();
 
@@ -74,27 +76,19 @@ public class AccountFragment extends Fragment {
             }
         });
 
-        // cand e apasat add admin (buton ascuns by default)
-        addAdminBtn.setOnClickListener(new View.OnClickListener() {
+        // cand este apasat butonul more (3 dots)
+        popUpBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addAdminDialog();
+                popUpMenuOpen();
             }
         });
 
-        SharedPreferences sharedPref = activity.getSharedPreferences("preferences", Context.MODE_PRIVATE);
-        boolean darkmode = sharedPref.getBoolean("dark",false);
-        darkToggleBtn.setChecked(darkmode);
-        darkToggleBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                activity.setDarkMode(isChecked);
-            }
-        });
-
+        sharedPref = activity.getSharedPreferences("preferences", Context.MODE_PRIVATE);
         TextView name = view.findViewById(R.id.account_name);
         name.setText(activity.getUserName());
         ImageView picture = view.findViewById(R.id.account_picture);
-        Glide.with(this).load(activity.getUserPhoto()).apply(RequestOptions.circleCropTransform()).into(picture);
+        Glide.with(this).load(activity.getUser().getPhotoUrl()).apply(RequestOptions.circleCropTransform()).into(picture);
     }
 
     private void addJoinedEventsToList() {
@@ -110,7 +104,6 @@ public class AccountFragment extends Fragment {
     public void setAdminView() {
         if(this.getView() != null) {
             this.getView().findViewById(R.id.my_events).setEnabled(true);
-            this.getView().findViewById(R.id.add_admin).setVisibility(View.VISIBLE);
         }
     }
 
@@ -140,6 +133,33 @@ public class AccountFragment extends Fragment {
         }
     }
 
+    private void popUpMenuOpen() {
+        PopupMenu popup = new PopupMenu(getContext(), popUpBtn);
+        final MenuInflater inflater = popup.getMenuInflater();
+        inflater.inflate(R.menu.pop_up_menu, popup.getMenu());
+
+        boolean darkMode = sharedPref.getBoolean("dark",false);
+        popup.getMenu().getItem(0).setChecked(darkMode);
+        popup.getMenu().getItem(1).setVisible(activity.getDatabase().admin);
+
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.dark_toggle:
+                        activity.setDarkMode(!item.isChecked());
+                        return true;
+                    case R.id.add_admin:
+                        addAdminDialog();
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        });
+        popup.show();
+    }
+
     private void addAdminDialog() {
         DialogFragment newFragment = new AddAdminDialog(activity);
         newFragment.show(getFragmentManager(), "addAdmin");
@@ -151,7 +171,7 @@ public class AccountFragment extends Fragment {
         builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 LoginActivity.signOut();
-                activity.startLogin();
+                activity.goToLogin();
                 dialog.dismiss();
             }
         });

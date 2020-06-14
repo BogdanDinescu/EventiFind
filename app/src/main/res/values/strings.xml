@@ -31,6 +31,6 @@
     <string name="Email">User\'s email</string>
     <string name="User_not_exist">User with this email does not exist</string>
     <string name="User_admined">User made admin</string>
-    <string name="Dark">Dark</string>
-    <string name="Light">Light</string>
+    <string name="Dark">Dark Mode</string>
+    <string name="More">More</string>
 </resources>

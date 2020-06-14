@@ -4,8 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -30,12 +31,20 @@ public class LoginActivity extends AppCompatActivity {
     private SignInButton signInButton;
     private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
-    private int RC_SIGN_IN = 2;
+    private final int RC_SIGN_IN = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
+        // seteaza tema in functie de setarile utilizatorului
+        SharedPreferences sharedPref = getSharedPreferences("preferences", Context.MODE_PRIVATE);
+        boolean darkMode = sharedPref.getBoolean("dark", false);
+        if (darkMode) {
+            setTheme(R.style.AppTheme_Dark);
+        } else {
+            setTheme(R.style.AppTheme);
+        }
+
         setContentView(R.layout.activity_login);
 
         signInButton = findViewById(R.id.sign_in_button);
@@ -54,10 +63,11 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    private void gotoMain() {
-        Intent intent = new Intent();
-        setResult(Activity.RESULT_OK, intent);
+    private void goToMain() {
+        Intent i = new Intent(this, MainActivity.class);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         finish();
+        startActivity(i);
     }
 
     private void singInWithGoogle() {
@@ -95,7 +105,7 @@ public class LoginActivity extends AppCompatActivity {
                             FirebaseUser user = mAuth.getCurrentUser();
                             FirebaseDatabase.getInstance().getReference().child("users").child(user.getUid()).child("admin").setValue(false);
                             FirebaseDatabase.getInstance().getReference().child("users").child(user.getUid()).child("email").setValue(user.getEmail());
-                            gotoMain();
+                            goToMain();
                         } else {
                             // If sign in fails
                             Log.e("err", "signInWithCredential:failure", task.getException());
