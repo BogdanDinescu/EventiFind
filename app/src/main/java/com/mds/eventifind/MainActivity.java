@@ -1,16 +1,19 @@
-package com.example.eventifind;
+package com.mds.eventifind;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Vibrator;
+import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,21 +27,25 @@ public class MainActivity extends AppCompatActivity {
     private TabsManager tabsManager;
     private Database database;
     private LocationService locationService;
+    private SharedPreferences sharedPref;
     private ProgressBar progressBar;
     private TextView errorText;
     private FirebaseUser user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
+        // seteaza tema in functie de setarile utilizatorului
+        sharedPref = getSharedPreferences("preferences", Context.MODE_PRIVATE);
+        boolean darkMode = sharedPref.getBoolean("dark",false);
+        if (darkMode)
+            setTheme(R.style.AppTheme_Dark);
+        else
+            setTheme(R.style.AppTheme);
+
         setContentView(R.layout.activity_main);
         progressBar = findViewById(R.id.progressBar_cyclic);
         errorText = findViewById(R.id.error);
-        /*toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(true);
-        getSupportActionBar().setLogo(R.mipmap.ic_launcher_1);*/
 
         if(!isNetworkAvailable(this)) {
             setErrorText(getResources().getString(R.string.Internet_unavailable));
@@ -55,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
         tabsManager = new TabsManager(this, getSupportFragmentManager());
         user = FirebaseAuth.getInstance().getCurrentUser();
 
-
         Location location = locationService.getCurrentLocation();
         if (location != null)
             startWithLocation(location);
@@ -64,8 +70,7 @@ public class MainActivity extends AppCompatActivity {
     public void startWithLocation(Location location) {
         database.queryClosestEvents(location,10);
         database.getJoinedEvents(user.getUid());
-        database.getHostedEvents(user.getUid());
-        database.checkAdmin(user.getUid());
+        database.checkAdminGetHosted(user.getUid());
         tabsManager.CreateTabs();
     }
 
@@ -125,6 +130,24 @@ public class MainActivity extends AppCompatActivity {
         return locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER) && locationManager.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER);
     }
 
+    public void showToast(String toastString) {
+        Toast toast = Toast.makeText(this, toastString, Toast.LENGTH_LONG);
+        toast.show();
+    }
+
+    public void smallVibration() {
+        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        if (v != null) v.vibrate(100);
+    }
+
+    public void setDarkMode(boolean value) {
+        Log.e("e", String.valueOf(value));
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean("dark",value);
+        editor.commit();
+        reload(null);
+    }
+
     private void setErrorText(String text) {
         errorText.setText(text);
         errorText.setVisibility(View.VISIBLE);
@@ -132,7 +155,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void reload(View view){
-        this.finish();
+        Intent intent = this.getIntent();
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        finish();
+        startActivity(intent);
     }
 
     // go home on back pressed
@@ -143,4 +169,5 @@ public class MainActivity extends AppCompatActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
+
 }
