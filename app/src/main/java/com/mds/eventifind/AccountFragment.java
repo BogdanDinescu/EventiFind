@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
@@ -24,6 +25,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 
+import static com.facebook.FacebookSdk.getApplicationContext;
+
 public class AccountFragment extends Fragment {
     private Button signOutBtn;
     private Button joinedEvBtn;
@@ -33,6 +36,7 @@ public class AccountFragment extends Fragment {
     private RecyclerView recyclerView;
     private RecyclerAdapter adapter;
     private MainActivity activity;
+    private int joinedEventsCount;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
@@ -63,6 +67,11 @@ public class AccountFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 addJoinedEventsToList();
+                joinedEventsCount = activity.getDatabase().joinedEvents.size();
+                if(joinedEventsCount == 0) {
+                    String text = "You haven't joined any event yet";
+                    Toast.makeText(getApplicationContext(), text, Toast.LENGTH_LONG).show();
+                }
             }
         });
 
