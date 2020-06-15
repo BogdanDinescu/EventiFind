@@ -33,4 +33,6 @@
     <string name="User_admined">User made admin</string>
     <string name="Dark">Dark Mode</string>
     <string name="More">More</string>
+    <string name="Event_Today">You have an event today: %1$s</string>
+    <string name="Event_Tomorrow">You have an event tomorrow: %1$s</string>
 </resources>

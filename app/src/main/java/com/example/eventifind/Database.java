@@ -107,6 +107,7 @@ public final class Database {
                 activity.getTabsManager().getMapFragment().colorMarkers();
                 queriedAlready = true;
                 activity.hideProgressBar();
+                activity.showNotifications();
             }
             // daca citirea a esuat
             @Override
@@ -128,6 +129,7 @@ public final class Database {
                         joinedEvents.addAll(joinedEventsMap.values());
                     }
                     activity.getTabsManager().getMapFragment().colorMarkers();
+                    activity.showNotifications();
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {

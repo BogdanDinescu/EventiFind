@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private TabsManager tabsManager;
     private Database database;
     private LocationService locationService;
+    private NotificationService notificationService;
     private SharedPreferences sharedPref;
     private ProgressBar progressBar;
     private TextView errorText;
@@ -67,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
         // initializari
         database = Database.getDatabase(this);
         locationService = new LocationService(this);
+        notificationService = new NotificationService(this);
         tabsManager = new TabsManager(this, getSupportFragmentManager());
 
         Location location = locationService.getCurrentLocation();
@@ -153,6 +155,10 @@ public class MainActivity extends AppCompatActivity {
     public void showToast(String toastString) {
         Toast toast = Toast.makeText(this, toastString, Toast.LENGTH_LONG);
         toast.show();
+    }
+
+    public void showNotifications() {
+        notificationService.showNotifications(database.eventMap,database.joinedEvents);
     }
 
     public void smallVibration() {
