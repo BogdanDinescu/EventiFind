@@ -23,7 +23,16 @@
     <string name="My_events">My events</string>
     <string name="Hosted_by">Hosted by: %1$s</string>
     <string name="Delete">Delete</string>
-    <string name="Event_deleted">Event Deleted</string>
+    <string name="Event_deleted">Event deleted or not in range</string>
     <string name="Location_unavailable">Location unavailable. Tap to retry</string>
     <string name="Internet_unavailable">Internet connection unavailable. Tap to retry</string>
+    <string name="Not_Today">No events found on selected date</string>
+    <string name="Add_admin">Add admin</string>
+    <string name="Email">User\'s email</string>
+    <string name="User_not_exist">User with this email does not exist</string>
+    <string name="User_admined">User made admin</string>
+    <string name="Dark">Dark Mode</string>
+    <string name="More">More</string>
+    <string name="Event_Today">You have an event today: %1$s</string>
+    <string name="Event_Tomorrow">You have an event tomorrow: %1$s</string>
 </resources>

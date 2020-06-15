@@ -21,26 +21,34 @@ import java.util.HashMap;
 import java.util.List;
 
 public final class Database {
-    private DatabaseReference mDatabase = null;
+    private static Database instance = null;
+    public boolean queriedAlready;
+    private DatabaseReference databaseRef;
     public HashMap<String,Event> eventMap;
     public ArrayList<String> joinedEvents;
     public HashMap<String,Event> hostedEvents;
-    public Boolean admin;
+    public boolean admin;
     private MainActivity activity;
 
-    public Database(MainActivity context){
+    private Database(MainActivity context) {
         this.activity = context;
+        this.databaseRef = FirebaseDatabase.getInstance().getReference();
+        this.eventMap = new HashMap<String, Event>();
+        this.joinedEvents = new ArrayList<String>();
+        this.hostedEvents = new HashMap<String, Event>();
+        this.admin = false;
+        this.queriedAlready = false;
     }
 
-    private DatabaseReference getDatabaseReference(){
-        if(mDatabase == null) {
-            mDatabase = FirebaseDatabase.getInstance().getReference();
-            eventMap = new HashMap<String, Event>();
-            joinedEvents = new ArrayList<String>();
-            hostedEvents = new HashMap<String, Event>();
-            admin = false;
+    public static Database getDatabase(MainActivity context) {
+        if (instance == null) {
+            instance = new Database(context);
         }
-        return mDatabase;
+        return instance;
+    }
+
+    private DatabaseReference getDatabaseReference() {
+        return instance.databaseRef;
     }
 
     public void createEvent(String name, String description, Date data , double latitude, double longitude, String ownerId, String ownerName) {
@@ -54,13 +62,15 @@ public final class Database {
         });
     }
 
-    public void checkAdmin(String userId){
-        getDatabaseReference().child("users").child(userId).child("admin").addListenerForSingleValueEvent(new ValueEventListener() {
+    public void checkAdminGetHosted(final String userId){
+        getDatabaseReference().child("users").child(userId).child("admin").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                admin = dataSnapshot.getValue(Boolean.class);
-                if(admin)
+                admin = (boolean) dataSnapshot.getValue();
+                if(admin) {
                     activity.getTabsManager().getAccountFragment().setAdminView();
+                    getHostedEvents(userId);
+                }
             }
 
             @Override
@@ -70,7 +80,7 @@ public final class Database {
         });
     }
 
-    public void queryClosestEvents(Location location, Integer numberOfEvents){
+    public void queryClosestEvents(Location location, Integer numberOfEvents) {
         // obtine hash-ul pentru locatia data
         final GeoHash hash = GeoHash.fromLocation(location,4);
         // obtine regiunile din imprejur
@@ -95,7 +105,9 @@ public final class Database {
                 activity.getTabsManager().getMapFragment().addMarkers();
                 activity.getTabsManager().getFeedFragment().loadFeed();
                 activity.getTabsManager().getMapFragment().colorMarkers();
+                queriedAlready = true;
                 activity.hideProgressBar();
+                activity.showNotifications();
             }
             // daca citirea a esuat
             @Override
@@ -103,7 +115,7 @@ public final class Database {
                 Log.e("Cancelled", databaseError.toString());
             }
         };
-        // Querry
+        // Query
         getDatabaseReference().child("events").limitToFirst(numberOfEvents).addValueEventListener(eventListener);
     }
 
@@ -117,7 +129,7 @@ public final class Database {
                         joinedEvents.addAll(joinedEventsMap.values());
                     }
                     activity.getTabsManager().getMapFragment().colorMarkers();
-                    activity.getTabsManager().getFeedFragment().loadFeed();
+                    activity.showNotifications();
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -134,10 +146,17 @@ public final class Database {
                 if(!dataSnapshot.exists()) {
                     String key = dataSnapshot.getRef().push().getKey();
                     dataSnapshot.getRef().child(key).setValue(eventId);
+                    activity.getTabsManager().getFeedFragment().buttonSetText(eventId,false);
+                    activity.getTabsManager().getAccountFragment().buttonSetText(eventId,false);
+                    activity.getTabsManager().getCalendarFragment().buttonSetText(eventId,false);
                 }else {
                     for(DataSnapshot d:dataSnapshot.getChildren()){
-                        if (d.getValue().equals(eventId))
+                        if (d.getValue().equals(eventId)) {
                             d.getRef().removeValue();
+                            activity.getTabsManager().getFeedFragment().buttonSetText(eventId,true);
+                            activity.getTabsManager().getAccountFragment().buttonSetText(eventId,true);
+                            activity.getTabsManager().getCalendarFragment().buttonSetText(eventId,true);
+                        }
                     }
                 }
             }
@@ -174,7 +193,8 @@ public final class Database {
                 joinedEvents.remove(eventId);
                 hostedEvents.remove(eventId);
                 activity.getTabsManager().getMapFragment().deleteMarker(eventId);
-                activity.getTabsManager().getFeedFragment().loadFeed();
+                activity.getTabsManager().getFeedFragment().notifyEventCardRemoved(eventId);
+                activity.getTabsManager().getAccountFragment().notifyEventCardRemoved(eventId);
             }
 
             @Override
@@ -182,6 +202,30 @@ public final class Database {
                 Log.e("onCancelled", databaseError.toString());
             }
         });
+    }
+
+    public void addAdminByEmail(String email) {
+        if (this.admin) {
+            getDatabaseReference().child("users").orderByChild("email").equalTo(email).limitToFirst(1).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    Log.e("result", dataSnapshot.toString());
+                    if (dataSnapshot.exists()) {
+                        for (DataSnapshot user : dataSnapshot.getChildren()) {
+                            user.getRef().child("admin").setValue(true);
+                        }
+                        activity.showToast(activity.getResources().getString(R.string.User_admined));
+                    } else {
+                        activity.showToast(activity.getResources().getString(R.string.User_not_exist));
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Log.e("onCancelled", databaseError.toString());
+                }
+            });
+        }
     }
 }
 

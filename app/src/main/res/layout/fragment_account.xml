@@ -30,13 +30,21 @@
 
         <TextView
             android:id="@+id/account_name"
+            android:textAppearance="@style/TextAppearance.AppCompat.Headline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:textAlignment="center"
-            android:textColor="@android:color/black"
             android:textSize="18sp" />
 
+        <ImageButton
+            android:id="@+id/more_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/More"
+            app:srcCompat="@drawable/ic_3_dots"
+            android:backgroundTint="@android:color/transparent"
+            />
     </LinearLayout>
 
     <Button
@@ -76,6 +84,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:scrollbars="none"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintTop_toBottomOf="@id/joined_events"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

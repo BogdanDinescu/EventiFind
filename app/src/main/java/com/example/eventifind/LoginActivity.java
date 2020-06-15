@@ -4,7 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -27,14 +29,22 @@ import com.google.firebase.database.FirebaseDatabase;
 public class LoginActivity extends AppCompatActivity {
 
     private SignInButton signInButton;
-    private static GoogleSignInClient mGoogleSignInClient;
+    private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
-    private int RC_SIGN_IN = 1;
+    private final int RC_SIGN_IN = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(R.style.AppTheme);
         super.onCreate(savedInstanceState);
+        // seteaza tema in functie de setarile utilizatorului
+        SharedPreferences sharedPref = getSharedPreferences("preferences", Context.MODE_PRIVATE);
+        boolean darkMode = sharedPref.getBoolean("dark", false);
+        if (darkMode) {
+            setTheme(R.style.AppTheme_Dark);
+        } else {
+            setTheme(R.style.AppTheme);
+        }
+
         setContentView(R.layout.activity_login);
 
         signInButton = findViewById(R.id.sign_in_button);
@@ -53,21 +63,11 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        // la start daca contul nu e null, inseamna ca a fost logat deja si intra direct in MainActivity
-        //GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if(currentUser != null)
-            gotoMain();
-    }
-
-    private void gotoMain() {
-        Intent intent = new Intent(this, MainActivity.class);
-        //intent.putExtra("account", account);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
+    private void goToMain() {
+        Intent i = new Intent(this, MainActivity.class);
+        i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        finish();
+        startActivity(i);
     }
 
     private void singInWithGoogle() {
@@ -104,7 +104,8 @@ public class LoginActivity extends AppCompatActivity {
                             // Sign in success
                             FirebaseUser user = mAuth.getCurrentUser();
                             FirebaseDatabase.getInstance().getReference().child("users").child(user.getUid()).child("admin").setValue(false);
-                            gotoMain();
+                            FirebaseDatabase.getInstance().getReference().child("users").child(user.getUid()).child("email").setValue(user.getEmail());
+                            goToMain();
                         } else {
                             // If sign in fails
                             Log.e("err", "signInWithCredential:failure", task.getException());
@@ -114,7 +115,6 @@ public class LoginActivity extends AppCompatActivity {
 
     }
     static void signOut() {
-        mGoogleSignInClient.signOut();
         FirebaseAuth.getInstance().signOut();
     }
 

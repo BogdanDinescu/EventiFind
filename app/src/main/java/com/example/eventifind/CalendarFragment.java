@@ -4,13 +4,12 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CalendarView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 
@@ -21,6 +20,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,6 +29,8 @@ public class CalendarFragment extends Fragment {
     private CalendarView calendarView;
     private MainActivity activity;
     private RecyclerView recyclerView;
+    private RecyclerAdapter adapter;
+    private TextView message;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
@@ -40,70 +42,63 @@ public class CalendarFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         calendarView = view.findViewById(R.id.calendarView);
+        message = view.findViewById(R.id.message);
+        recyclerView = view.findViewById(R.id.list_event);
         activity = (MainActivity) getActivity();
 
-//        ArrayList<ElementCalendar> elementCalendar = new ArrayList<>();
-//        ArrayList<String> joinedEvents = activity.getDatabase().joinedEvents;
-
-        recyclerView = view.findViewById(R.id.list_event);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(activity);
-        recyclerView.setLayoutManager(layoutManager);
 
         calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
-            TextView textView = activity.findViewById(R.id.textView);
+
             @Override
-            public void onSelectedDayChange(CalendarView view, int year, int month,
-                                            int dayOfMonth) {
-                boolean isAtLeastOneEvent = false;
-                month++;
-
-                HashMap<String, Event> aux = new HashMap<>();
-
-                for(Map.Entry<String,Event> e : activity.getDatabase().eventMap.entrySet()) {
-
-                    aux.put(e.getKey(), e.getValue());
-
-                    String dateClickedString = dayOfMonth + "/" + month + "/" + year;
-                    Date dateClicked = null;
-                    try {
-                         dateClicked = new SimpleDateFormat("dd/MM/yyyy").parse(dateClickedString);
-                    } catch (ParseException ex) {
-                        ex.printStackTrace();
-                    }
-                    DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
-
-                    Date dateClickedWithNoTime = null;
-
-                    try {
-                        dateClickedWithNoTime = formatter.parse(formatter.format(dateClicked));
-                    } catch (ParseException ex) {
-                        ex.printStackTrace();
-                    }
-
-                    Date dateInDBWithNoTime = null;
-
-                    try {
-                         dateInDBWithNoTime = formatter.parse(formatter.format(e.getValue().getDate()));
-                    } catch (ParseException ex) {
-                        ex.printStackTrace();
-                    }
-
-                    if(dateInDBWithNoTime.toString().equals(dateClickedWithNoTime.toString()) && activity.getDatabase().joinedEvents.contains(e.getKey())) {
-                        textView.setText("");
-                        RecyclerAdapter adapter = new RecyclerAdapter(aux, activity.getUserId());
-                        recyclerView.setAdapter(adapter);
-
-                        isAtLeastOneEvent = true;
-                    }
-                }
-
-                if(isAtLeastOneEvent == false) {
-                    recyclerView.setAdapter(null);
-                    textView.setText("Niciun eveniment in aceasta zi!");
-                }
-
+            public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
+                showEventsForSelectedDate(year,month,dayOfMonth);
             }
         });
+
+    }
+
+    private void showEventsForSelectedDate(int year, int month, int dayOfMonth) {
+        boolean isAtLeastOneEvent = false;
+        month++;
+
+        HashMap<String, Event> aux = new HashMap<>();
+
+        for(Map.Entry<String,Event> e : activity.getDatabase().eventMap.entrySet()) {
+
+            DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+            String dateClickedString = dayOfMonth + "/" + month + "/" + year;
+
+            Date dateClicked = null;
+            try {
+                dateClicked = formatter.parse(dateClickedString);
+            } catch (ParseException ex) {
+                ex.printStackTrace();
+            }
+
+            Date dateClickedWithNoTime = null;
+
+            try {
+                dateClickedWithNoTime = formatter.parse(formatter.format(dateClicked));
+            } catch (ParseException ex) {
+                ex.printStackTrace();
+            }
+
+            Date dateInDBWithNoTime = e.getValue().getDate();
+
+            if(dateInDBWithNoTime.equals(dateClicked) && activity.getDatabase().joinedEvents.contains(e.getKey())) {
+                aux.put(e.getKey(), e.getValue());
+                isAtLeastOneEvent = true;
+            }
+        }
+
+        if(!isAtLeastOneEvent) {
+            message.setVisibility(View.VISIBLE);
+            recyclerView.setAdapter(null);
+        } else {
+            message.setVisibility(View.GONE);
+            adapter = new RecyclerAdapter(aux);
+            recyclerView.setAdapter(adapter);
+        }
 
     }
 
@@ -125,9 +120,31 @@ public class CalendarFragment extends Fragment {
         calendarView.setDate(milliTime);
     }
 
+    public void buttonSetText(String key,boolean join) {
+        if(adapter != null) {
+            // daca exista in lista
+            if(adapter.getIndex(key) >= 0) {
+                Button joinButton = recyclerView.getLayoutManager().findViewByPosition(adapter.getIndex(key)).findViewById(R.id.join);
+                if(join) {
+                    joinButton.setTextColor(activity.getResources().getColor(R.color.colorPrimary));
+                    joinButton.setText(activity.getResources().getString(R.string.Join));
+                } else {
+                    joinButton.setTextColor(activity.getResources().getColor(R.color.colorAccent));
+                    joinButton.setText(activity.getResources().getString(R.string.Unjoin));
+                }
+            }
+        }
+    }
+
     // cand date e obiect de tip Java.util.date
     public void focusOnDate(Date date) {
         calendarView.setDate(date.getTime());
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(date);
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+        showEventsForSelectedDate(year,month,day);
     }
 
 }
