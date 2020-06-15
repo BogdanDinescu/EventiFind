@@ -1,4 +1,4 @@
-package com.example.eventifind;
+package com.mds.eventifind;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -64,6 +65,11 @@ public class AccountFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 addJoinedEventsToList();
+                int joinedEventsCount = activity.getDatabase().joinedEvents.size();
+                if(joinedEventsCount == 0) {
+                    String text = "You haven't joined any event yet";
+                    Toast.makeText(activity.getApplicationContext(), text, Toast.LENGTH_LONG).show();
+                }
             }
         });
 

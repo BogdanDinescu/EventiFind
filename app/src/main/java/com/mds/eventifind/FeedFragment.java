@@ -1,4 +1,4 @@
-package com.example.eventifind;
+package com.mds.eventifind;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
