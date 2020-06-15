@@ -52,11 +52,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "1077636721774-3f1qqejmm0evcnossdrpq6cgheu9hf3u.apps.googleusercontent.com",
+          "client_id": "1077636721774-r0ecpvpf5n3ig5dugchredp8v340pcqq.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.mds.eventifind",
-            "certificate_hash": "55040f2504f884a6eb8e0b9c673393f7e661a8c6"
+            "certificate_hash": "319b9feab21a5438c62e4b98947d3cb7e818ccb6"
           }
         },
         {

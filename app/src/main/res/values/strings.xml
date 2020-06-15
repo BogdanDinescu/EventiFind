@@ -33,4 +33,6 @@
     <string name="User_admined">User made admin</string>
     <string name="Dark">Dark</string>
     <string name="Light">Light</string>
+    <string name="facebook_app_id">260920798621220</string>
+    <string name="fb_login_protocol_scheme">fb260920798621220</string>
 </resources>
