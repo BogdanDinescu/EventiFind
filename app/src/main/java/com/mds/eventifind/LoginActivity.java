@@ -1,9 +1,11 @@
 package com.mds.eventifind;
 
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -176,12 +178,6 @@ public class LoginActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             FirebaseUser user = mAuth.getCurrentUser();
-                      /*
-                            String facebookId = user.getUid();
-                            String user_image = "https://graph.facebook.com" + facebookId + "/picture?height500";
-                            String user_name = user.getDisplayName();
-                            storeUserdata(user_name, user_image);
-                      */
                             gotoMain();
                         } else {
                             // If sign in fails, display a message to the user.
@@ -236,5 +232,14 @@ public class LoginActivity extends AppCompatActivity {
         intent.addCategory(Intent.CATEGORY_HOME);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
+    }
+
+    public void showRickRoll(View view) {
+        Toast.makeText(LoginActivity.this, "You just got Rick Rolled", Toast.LENGTH_SHORT).show();
+        ImageView imageview =(ImageView) findViewById(R.id.imageView3);
+        imageview.setVisibility(View.VISIBLE);
+
+        MediaPlayer mp = MediaPlayer.create(this, R.raw.jebaitedsong);
+        mp.start();
     }
 }
