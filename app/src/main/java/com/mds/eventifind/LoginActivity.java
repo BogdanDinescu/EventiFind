@@ -5,9 +5,14 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.Toast;
+import android.widget.VideoView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -30,6 +35,8 @@ public class LoginActivity extends AppCompatActivity {
     private static GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
     private int RC_SIGN_IN = 1;
+    private Button btnBait;
+    private MediaPlayer s1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +58,34 @@ public class LoginActivity extends AppCompatActivity {
                 singInWithGoogle();
             }
         });
+
+        btnBait = findViewById(R.id.btnBait);
+        btnBait.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ImageView imageview =(ImageView) findViewById(R.id.imageView3);
+                imageview.setVisibility(View.VISIBLE);
+
+                if(s1 != null) {
+                    if (s1.isPlaying() == true) {
+                            s1.release();
+                            s1 = MediaPlayer.create(LoginActivity.this, R.raw.jebaitedsong);
+                            imageview.setVisibility(View.INVISIBLE);
+                    } else {
+                        s1 = MediaPlayer.create(LoginActivity.this, R.raw.jebaitedsong);
+                        s1.start();
+                        Toast.makeText(LoginActivity.this, "Nu merge!!!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                else {
+                    s1 = MediaPlayer.create(LoginActivity.this, R.raw.jebaitedsong);
+                    s1.start();
+
+                    Toast.makeText(LoginActivity.this, "Nu merge!!!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
     }
 
     @Override
@@ -127,4 +162,5 @@ public class LoginActivity extends AppCompatActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
+
 }
